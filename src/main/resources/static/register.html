@@ -1,10 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <!-- Include Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body>
-$END$
+<div class="flex justify-center items-center h-screen">
+    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-4">Register</h2>
+        <form id="register-form">
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2" for="id">
+                    ID
+                </label>
+                <input
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="id" type="text" placeholder="Enter your ID">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2" for="password">
+                    Password
+                </label>
+                <input
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="password" type="password" placeholder="Enter your password">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2" for="name">
+                    Name
+                </label>
+                <input
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="name" type="text" placeholder="Enter your name">
+            </div>
+            <div class="mb-6">
+                <label class="block text-gray-700 font-bold mb-2" for="phone-number">
+                    Phone Number
+                </label>
+                <input
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="phone-number" type="tel" placeholder="Enter your phone number">
+            </div>
+            <div class="flex items-center justify-between">
+                <button
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        type="button" id="register-btn">
+                    Register
+                </button>
+                <a
+                        class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
+                        href="#" id="login-btn">
+                    Back to Login
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Register button click event handler
+    document.getElementById('register-btn').addEventListener('click', () => {
+        const id = document.getElementById('id').value;
+        const password = document.getElementById('password').value;
+        const name = document.getElementById('name').value;
+        const phoneNumber = document.getElementById('phone-number').value;
+
+        // Call the register API
+        fetch('/api/members/join', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id, password, name, phoneNumber })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Handle successful registration
+                    alert(data.message);
+                    // Redirect back to the login page
+                    window.location.href = '/';
+                } else {
+                    // Handle registration error
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during registration.');
+            });
+    });
+
+    // Login button click event handler
+    document.getElementById('login-btn').addEventListener('click', () => {
+        // Redirect to the login page
+        window.location.href = '/';
+    });
+</script>
 </body>
 </html>

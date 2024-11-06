@@ -1,4 +1,4 @@
-package com.example.pickplace.member.service;
+package com.example.pickplace.member.service.exception;
 
 public class MemberNotFoundException extends RuntimeException {
     public MemberNotFoundException(String message) {
