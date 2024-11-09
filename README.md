@@ -10,7 +10,11 @@
 ![image](https://github.com/user-attachments/assets/bb87d135-e8db-4af7-bc82-8d104360d644)
 ![image](https://github.com/user-attachments/assets/b5074ad8-e497-4909-a79f-7452e382e913)
 
+- 회원가입 시 추가로 필요한 정보들을 추가
+- JWT 적용
+- 권한 부여
+
 ---
 ## TODO
-1. 관리자 기능
+1. 권한을 이용하여 관리자 기능
 2. 추가 기능들(팀원과 협의)
