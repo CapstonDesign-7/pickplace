@@ -4,6 +4,7 @@ import com.example.pickplace.member.controller.dto.JoinRequest;
 import com.example.pickplace.member.controller.dto.LoginRequest;
 import com.example.pickplace.member.repository.MemberRepository;
 import com.example.pickplace.member.repository.entity.Member;
+import com.example.pickplace.member.repository.entity.Role;
 import com.example.pickplace.member.service.exception.DuplicateMemberException;
 import com.example.pickplace.member.service.exception.InvalidPasswordException;
 import com.example.pickplace.member.service.exception.MemberNotFoundException;
@@ -34,6 +35,10 @@ public class MemberServiceImpl  implements MemberService{
                 .password(passwordEncoder.encode(joinRequest.getPassword()))
                 .name(joinRequest.getName())
                 .phoneNumber(joinRequest.getPhoneNumber())
+                .email(joinRequest.getEmail())
+                .gender(joinRequest.getGender())
+                .birth(joinRequest.getBirth())
+                .role(Role.USER)
                 .build();
 
         memberRepository.save(member);

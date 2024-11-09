@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <!-- Include Tailwind CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body>
@@ -18,7 +17,7 @@
                 </label>
                 <input
                         class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="id" type="text" placeholder="Enter your ID">
+                        id="id" type="text" placeholder="ID">
             </div>
             <div class="mb-6">
                 <label class="block text-gray-700 font-bold mb-2" for="password">
@@ -26,18 +25,18 @@
                 </label>
                 <input
                         class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="password" type="password" placeholder="Enter your password">
+                        id="password" type="password" placeholder="Password">
             </div>
             <div class="flex items-center justify-between">
                 <button
                         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                         type="button" id="login-btn">
-                    Sign In
+                    로그인
                 </button>
                 <a
                         class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
                         href="#" id="register-btn">
-                    Register
+                    회원가입
                 </a>
             </div>
         </form>
@@ -45,12 +44,12 @@
 </div>
 
 <script>
-    // Login button click event handler
+    // 로그인 버튼
     document.getElementById('login-btn').addEventListener('click', () => {
         const id = document.getElementById('id').value;
         const password = document.getElementById('password').value;
 
-        // Call the login API
+        // 로그인 API 호출
         fetch('/api/members/login', {
             method: 'POST',
             headers: {
@@ -74,9 +73,9 @@
             });
     });
 
-    // Register button click event handler
+    // 회원가입 버튼
     document.getElementById('register-btn').addEventListener('click', () => {
-        // Redirect to the registration page
+        // 리디렉션
         window.location.href = '/register.html';
     });
 </script>

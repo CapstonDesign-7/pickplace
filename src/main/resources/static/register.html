@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
-    <!-- Include Tailwind CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body>
@@ -18,7 +17,7 @@
                 </label>
                 <input
                         class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="id" type="text" placeholder="Enter your ID">
+                        id="id" type="text" placeholder="ID를 입력하세요..">
             </div>
             <div class="mb-4">
                 <label class="block text-gray-700 font-bold mb-2" for="password">
@@ -26,34 +25,62 @@
                 </label>
                 <input
                         class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="password" type="password" placeholder="Enter your password">
+                        id="password" type="password" placeholder="비밀번호를 입력하세요..">
             </div>
             <div class="mb-4">
                 <label class="block text-gray-700 font-bold mb-2" for="name">
-                    Name
+                    이름
                 </label>
                 <input
                         class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="name" type="text" placeholder="Enter your name">
+                        id="name" type="text" placeholder="이름을 입력하세요..">
             </div>
             <div class="mb-6">
                 <label class="block text-gray-700 font-bold mb-2" for="phone-number">
-                    Phone Number
+                    전화번호
                 </label>
                 <input
                         class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="phone-number" type="tel" placeholder="Enter your phone number">
+                        id="phone-number" type="tel" placeholder="전화번호를 입력하세요..">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2" for="email">
+                    이메일
+                </label>
+                <input
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="email" type="email" placeholder="이메일을 입력하세요..">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2" for="birthdate">
+                    생일
+                </label>
+                <input
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="birthdate" type="date">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2" for="gender">
+                    성별
+                </label>
+                <div class="flex items-center">
+                    <input type="radio" id="male" name="gender" value="M" class="mr-2">
+                    <label for="male" class="text-gray-700">남성</label>
+
+                    <input type="radio" id="female" name="gender" value="F" class="ml-4 mr-2">
+                    <label for="female" class="text-gray-700">여성</label>
+                </div>
             </div>
             <div class="flex items-center justify-between">
                 <button
                         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                         type="button" id="register-btn">
-                    Register
+                    회원가입 하기
                 </button>
                 <a
                         class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
                         href="#" id="login-btn">
-                    Back to Login
+                    로그인 화면
                 </a>
             </div>
         </form>
@@ -61,42 +88,45 @@
 </div>
 
 <script>
-    // Register button click event handler
+    // 회원가입 버튼
     document.getElementById('register-btn').addEventListener('click', () => {
         const id = document.getElementById('id').value;
         const password = document.getElementById('password').value;
         const name = document.getElementById('name').value;
         const phoneNumber = document.getElementById('phone-number').value;
+        const email = document.getElementById('email').value;
+        const birthdate = document.getElementById('birthdate').value;
+        const gender = document.querySelector('input[name="gender"]:checked')?.value;
 
-        // Call the register API
+        // 로그인 API 호출
         fetch('/api/members/join', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ id, password, name, phoneNumber })
+            body: JSON.stringify({ id, password, name, phoneNumber, email, birth: birthdate, gender })
         })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Handle successful registration
+                    // 회원가입 성공
                     alert(data.message);
-                    // Redirect back to the login page
+                    // 로그인 페이지로 리다이렉트
                     window.location.href = '/';
                 } else {
-                    // Handle registration error
+                    // 회원가입 실패
                     alert(data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred during registration.');
+                alert('회원가입 중 오류가 발생했습니다.');
             });
     });
 
-    // Login button click event handler
+    // 로그인 버튼
     document.getElementById('login-btn').addEventListener('click', () => {
-        // Redirect to the login page
+        // 리다이렉트 로그인
         window.location.href = '/';
     });
 </script>
