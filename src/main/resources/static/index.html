@@ -44,7 +44,7 @@
 </div>
 
 <script>
-    // 로그인 버튼
+    // 로그인 버튼 클릭 시
     document.getElementById('login-btn').addEventListener('click', () => {
         const id = document.getElementById('id').value;
         const password = document.getElementById('password').value;
@@ -60,22 +60,31 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Handle successful login
-                    alert(data.message);
+                    // 로그인 성공 시 JWT 토큰을 로컬 스토리지에 저장
+                    localStorage.setItem('jwtToken', data.token);
+                    alert('로그인 성공: ' + data.message);
+
+                    if(data.role === "USER"){
+                        // 로그인 후 리디렉션 처리 (필요 시)
+                        window.location.href = '/user.html';  // 로그인 후 홈 페이지로 이동 (필요에 따라 수정)
+                    } else {
+                        // 로그인 후 리디렉션 처리 (필요 시)
+                        window.location.href = '/admin.html';  // 로그인 후 홈 페이지로 이동 (필요에 따라 수정)
+                    }
                 } else {
-                    // Handle login error
+                    // 로그인 실패 시 에러 메시지
                     alert(data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred during login.');
+                alert('로그인 중 오류가 발생했습니다.');
             });
     });
 
-    // 회원가입 버튼
+    // 회원가입 버튼 클릭 시
     document.getElementById('register-btn').addEventListener('click', () => {
-        // 리디렉션
+        // 회원가입 페이지로 리디렉션
         window.location.href = '/register.html';
     });
 </script>

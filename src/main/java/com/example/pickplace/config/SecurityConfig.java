@@ -43,9 +43,11 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/","/api/members/join", "/api/members/login").permitAll()
-//                        .anyRequest().authenticated()
-                          .anyRequest().permitAll()  // 모든 요청에 대해 인증 없이 접근 허용
+                          .requestMatchers("/", "/index.html", "register.html","/api/members/join", "/api/members/login").permitAll()
+                                .requestMatchers("/user.html").hasAuthority("USER")
+                                .requestMatchers("/admin.html").hasAuthority("ADMIN")
+                          .anyRequest().authenticated()
+                          //.anyRequest().permitAll()  // 모든 요청에 대해 인증 없이 접근 허용
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
