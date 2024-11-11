@@ -57,4 +57,11 @@ public class MemberServiceImpl  implements MemberService{
 
         return member;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Member findById(String id) {
+        return memberRepository.findById(id)
+                .orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
+    }
 }

@@ -1,10 +1,124 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 대시보드</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .welcome-message {
+            font-size: 24px;
+        }
+        .logout-btn {
+            padding: 10px 20px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .content {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .admin-panel {
+            margin-top: 20px;
+        }
+        .admin-panel button {
+            margin-right: 10px;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
+<div class="container">
+    <div class="header">
+        <h1 class="welcome-message">관리자 대시보드</h1>
+        <button class="logout-btn" id="logout-btn">로그아웃</button>
+    </div>
+    <div class="content">
+        <h2>관리자 정보</h2>
+        <div id="admin-info">
+            <!-- 관리자 정보가 여기에 동적으로 표시됨 -->
+        </div>
 
+        <div class="admin-panel">
+            <h2>관리자 기능</h2>
+            <button onclick="manageUsers()">사용자 관리</button>
+            <button onclick="viewStatistics()">통계 보기</button>
+            <button onclick="systemSettings()">시스템 설정</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 페이지 로드 시 토큰 확인
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/login.html';
+            return;
+        }
+
+        // 토큰 디코딩하여 관리자 정보 표시
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.role !== 'ADMIN') {
+                alert('관리자 권한이 필요합니다.');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            document.getElementById('admin-info').innerHTML = `
+                    <p>아이디: ${payload.id}</p>
+                    <p>역할: 관리자</p>
+                `;
+        } catch (error) {
+            console.error('Error:', error);
+            alert('토큰이 유효하지 않습니다.');
+            window.location.href = '/login.html';
+        }
+    });
+
+    // 로그아웃 처리
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+    });
+
+    // 관리자 기능들
+    function manageUsers() {
+        alert('사용자 관리 기능은 아직 구현되지 않았습니다.');
+    }
+
+    function viewStatistics() {
+        alert('통계 보기 기능은 아직 구현되지 않았습니다.');
+    }
+
+    function systemSettings() {
+        alert('시스템 설정 기능은 아직 구현되지 않았습니다.');
+    }
+</script>
 </body>
 </html>

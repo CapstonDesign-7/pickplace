@@ -9,4 +9,5 @@ public interface MemberService {
 
     String join(JoinRequest joinRequest);
     Member login(LoginRequest loginRequest);
+    Member findById(String id);  // 추가
 }

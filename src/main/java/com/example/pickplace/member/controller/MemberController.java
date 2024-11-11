@@ -12,10 +12,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -43,10 +42,39 @@ public class MemberController {
         log.info("로그인 완료: {}", loginRequest.getId());
         return ResponseEntity.ok(new LoginResponse(token, "로그인이 완료되었습니다.", true));
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<MemberResponse> getMyInfo() {
+        // SecurityContext에서 현재 인증된 사용자 정보를 가져옴
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+
+        // 사용자 정보 조회
+        Member member = memberService.findById(userId);
+
+        // 응답 데이터 생성
+        MemberResponse response = new MemberResponse(
+                member.getId(),
+                member.getRole().name(),
+                member.getName()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+
     @Getter
     @AllArgsConstructor
     private static class ApiResponse {
         private String message;
         private boolean success;
+    }
+    // 응답 DTO
+    @Getter
+    @AllArgsConstructor
+    private static class MemberResponse {
+        private String id;
+        private String role;
+        private String name;
     }
 }

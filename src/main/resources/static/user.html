@@ -1,10 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용자 대시보드</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .welcome-message {
+            font-size: 24px;
+        }
+        .logout-btn {
+            padding: 10px 20px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .content {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
 </head>
 <body>
+<div class="container">
+    <div class="header">
+        <h1 class="welcome-message">사용자 대시보드</h1>
+        <button class="logout-btn" id="logout-btn">로그아웃</button>
+    </div>
+    <div class="content">
+        <h2>내 정보</h2>
+        <div id="user-info">
+            <!-- 사용자 정보가 여기에 동적으로 표시됨 -->
+        </div>
+    </div>
+</div>
 
+<script>
+    // API 요청 시 사용할 공통 함수
+    async function fetchWithAuth(url, options = {}) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No token found');
+        }
+
+        // Authorization 헤더 추가
+        const headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+
+        try {
+            const response = await fetch(url, {
+                ...options,
+                headers
+            });
+
+            if (response.status === 401) {
+                // 인증 실패 시 로그인 페이지로 리디렉션
+                localStorage.removeItem('token');
+                window.location.href = '/index.html';
+                return;
+            }
+
+            return response;
+        } catch (error) {
+            console.error('API request failed:', error);
+            throw error;
+        }
+    }
+
+    // 페이지 로드 시 사용자 정보 로드
+    async function loadUserInfo() {
+        try {
+            const response = await fetchWithAuth('/api/members/me');
+            if (response.ok) {
+                const userData = await response.json();
+                document.getElementById('user-info').innerHTML = `
+                        <p>아이디: ${userData.id}</p>
+                        <p>역할: 일반 사용자</p>
+                    `;
+            }
+        } catch (error) {
+            console.error('Failed to load user info:', error);
+        }
+    }
+
+    // 페이지 로드 시 실행
+    document.addEventListener('DOMContentLoaded', async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/index.html';
+            return;
+        }
+
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.role !== 'USER') {
+                alert('접근 권한이 없습니다.');
+                window.location.href = '/index.html';
+                return;
+            }
+
+            await loadUserInfo();
+        } catch (error) {
+            console.error('Error:', error);
+            alert('토큰이 유효하지 않습니다.');
+            window.location.href = '/index.html';
+        }
+    });
+
+    // 로그아웃 처리
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        window.location.href = '/index.html';
+    });
+</script>
 </body>
 </html>

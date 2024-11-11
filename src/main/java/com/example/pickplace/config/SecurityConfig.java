@@ -33,21 +33,17 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtService, userDetailsService);
-    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                          .requestMatchers("/", "/index.html", "register.html","/api/members/join", "/api/members/login").permitAll()
-                                .requestMatchers("/user.html").hasAuthority("USER")
-                                .requestMatchers("/admin.html").hasAuthority("ADMIN")
-                          .anyRequest().authenticated()
-                          //.anyRequest().permitAll()  // 모든 요청에 대해 인증 없이 접근 허용
+//                          .requestMatchers("/", "/index.html", "/favicon.ico", "register.html","/api/members/join", "/api/members/login", "/api/members/me").permitAll()
+//                                .requestMatchers("/user.html").hasAuthority("USER")
+//                                .requestMatchers("/admin.html").hasAuthority("ADMIN")
+//                          .anyRequest().authenticated()
+                                .anyRequest().permitAll()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -57,4 +53,10 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtService, userDetailsService);
+    }
+
 }
