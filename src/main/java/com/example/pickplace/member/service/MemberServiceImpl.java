@@ -22,12 +22,11 @@ public class MemberServiceImpl  implements MemberService{
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;  // 이메일 서비스 추가
 
     // 회원 가입
     @Override
     @Transactional
-    public String join(JoinRequest joinRequest) {
+    public void join(JoinRequest joinRequest) {
         if (memberRepository.existsById(joinRequest.getId())) {
             throw new DuplicateMemberException("이미 존재하는 회원입니다.");
         }
@@ -44,7 +43,6 @@ public class MemberServiceImpl  implements MemberService{
                 .build();
 
         memberRepository.save(member);
-        return "success";
     }
 
     // 로그인
@@ -115,12 +113,6 @@ public class MemberServiceImpl  implements MemberService{
         memberRepository.save(member);
 
         return temporaryPassword;
-    }
-
-    // 임시 비밀번호 생성
-    private String generateTempPassword() {
-        // 임시 비밀번호를 생성하는 로직 (예: 랜덤 문자열)
-        return UUID.randomUUID().toString().substring(0, 8);  // 예시로 8자리 랜덤 문자열 생성
     }
 
 }

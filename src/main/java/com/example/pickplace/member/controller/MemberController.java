@@ -31,7 +31,7 @@ public class MemberController {
     @PostMapping("/join")
     public ResponseEntity<ApiResponse> join(@RequestBody @Valid JoinRequest joinRequest) {
         log.info("회원가입 요청: {}", joinRequest.getId());
-        String joinResult = memberService.join(joinRequest);
+        memberService.join(joinRequest);
         log.info("회원가입 완료: {}", joinRequest.getId());
         return ResponseEntity.ok(new ApiResponse("회원가입이 완료되었습니다.", true));
     }

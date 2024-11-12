@@ -35,6 +35,7 @@ public class Member {
     private LocalDate birth;
 
     @JsonIgnore
+    @Setter
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -53,11 +54,6 @@ public class Member {
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.email = email;
-        this.birth = birth;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
 }
