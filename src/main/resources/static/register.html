@@ -28,6 +28,14 @@
                         id="password" type="password" placeholder="비밀번호를 입력하세요..">
             </div>
             <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2" for="confirm-password">
+                    Confirm Password
+                </label>
+                <input
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="confirm-password" type="password" placeholder="비밀번호를 확인하세요..">
+            </div>
+            <div class="mb-4">
                 <label class="block text-gray-700 font-bold mb-2" for="name">
                     이름
                 </label>
@@ -92,11 +100,18 @@
     document.getElementById('register-btn').addEventListener('click', () => {
         const id = document.getElementById('id').value;
         const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
         const name = document.getElementById('name').value;
         const phoneNumber = document.getElementById('phone-number').value;
         const email = document.getElementById('email').value;
         const birthdate = document.getElementById('birthdate').value;
         const gender = document.querySelector('input[name="gender"]:checked')?.value;
+
+        // 비밀번호 확인란 검사
+        if (password !== confirmPassword) {
+            alert("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+            return;
+        }
 
         // 로그인 API 호출
         fetch('/api/members/join', {
@@ -130,6 +145,7 @@
         window.location.href = '/';
     });
 </script>
+
 <script>
     // 현재 날짜로부터 18년 전 날짜 계산
     const today = new Date();

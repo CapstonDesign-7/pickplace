@@ -41,5 +41,4 @@ public class JoinRequest {
 
     private char gender;
 
-    // role 필드는 입력받지 않도록 설정, 기본값은 Member 엔티티에서 설정
 }
