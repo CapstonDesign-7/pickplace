@@ -1,13 +1,11 @@
 package com.example.pickplace.member.controller;
 
-import com.example.pickplace.member.controller.dto.JoinRequest;
-import com.example.pickplace.member.controller.dto.LoginRequest;
-import com.example.pickplace.member.controller.dto.UpdatePasswordRequest;
-import com.example.pickplace.member.controller.dto.UpdateProfileRequest;
+import com.example.pickplace.member.controller.dto.*;
 import com.example.pickplace.member.repository.entity.Member;
 import com.example.pickplace.member.response.ApiResponse;
 import com.example.pickplace.member.response.LoginResponse;
 import com.example.pickplace.member.response.MemberResponse;
+import com.example.pickplace.member.service.EmailService;
 import com.example.pickplace.member.service.JwtService;
 import com.example.pickplace.member.service.MemberService;
 import jakarta.validation.Valid;
@@ -27,6 +25,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final JwtService jwtService;
+    private final EmailService emailService;  // 이메일 서비스 추가
 
     // 회원가입 기능
     @PostMapping("/join")
@@ -86,5 +85,31 @@ public class MemberController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    // 아이디 찾기
+    @PostMapping("/find-id")
+    public ResponseEntity<ApiResponse> findId(@RequestBody @Valid FindIdRequest findIdRequest) {
+        log.info("아이디 찾기 요청: {}", findIdRequest);
+        String userId = memberService.findIdByNameAndEmail(findIdRequest);
+
+        // 이메일로 아이디 전송
+        emailService.sendIdToEmail(findIdRequest.getEmail(), userId);
+
+        log.info("아이디 전송 완료: {}", findIdRequest.getEmail());
+        return ResponseEntity.ok(new ApiResponse("이메일로 아이디를 전송했습니다.", true));
+    }
+
+    // 비밀번호 찾기
+    @PostMapping("/find-password")
+    public ResponseEntity<ApiResponse> findPassword(@RequestBody @Valid FindPasswordRequest findPasswordRequest) {
+        log.info("비밀번호 찾기 요청: {}", findPasswordRequest);
+        String tempPassword = memberService.findPasswordByNameAndIdAndEmail(findPasswordRequest);
+
+        // 이메일로 임시 비밀번호 전송
+        emailService.sendTempPasswordToEmail(findPasswordRequest.getEmail(), tempPassword);
+
+        log.info("임시 비밀번호 전송 완료: {}", findPasswordRequest.getEmail());
+        return ResponseEntity.ok(new ApiResponse("이메일로 임시 비밀번호를 전송했습니다.", true));
     }
 }

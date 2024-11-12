@@ -1,9 +1,6 @@
 package com.example.pickplace.member.service;
 
-import com.example.pickplace.member.controller.dto.JoinRequest;
-import com.example.pickplace.member.controller.dto.LoginRequest;
-import com.example.pickplace.member.controller.dto.UpdatePasswordRequest;
-import com.example.pickplace.member.controller.dto.UpdateProfileRequest;
+import com.example.pickplace.member.controller.dto.*;
 import com.example.pickplace.member.repository.MemberRepository;
 import com.example.pickplace.member.repository.entity.Member;
 import com.example.pickplace.member.repository.entity.Role;
@@ -16,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.UUID;
+
 @Service
 @Validated
 @RequiredArgsConstructor
@@ -23,6 +22,7 @@ public class MemberServiceImpl  implements MemberService{
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;  // 이메일 서비스 추가
 
     // 회원 가입
     @Override
@@ -91,4 +91,36 @@ public class MemberServiceImpl  implements MemberService{
 
         member.setPassword(passwordEncoder.encode(passwordRequest.getNewPassword()));
     }
+
+    // 아이디 찾기 (이름과 이메일로 아이디 조회)
+    @Override
+    public String findIdByNameAndEmail(FindIdRequest request) {
+        memberRepository.findByNameAndEmail(request.getName(), request.getEmail())
+                .orElseThrow(() -> new MemberNotFoundException("이름과 이메일에 해당하는 회원이 존재하지 않습니다."));
+
+        return "아이디가 이메일로 전송되었습니다.";
+    }
+
+    // 비밀번호 찾기 (아이디와 이메일로 임시 비밀번호 발급)
+    @Override
+    public String findPasswordByNameAndIdAndEmail(FindPasswordRequest request) {
+        Member member = memberRepository.findByNameAndIdAndEmail(request.getName(), request.getId(), request.getEmail())
+                .orElseThrow(() -> new MemberNotFoundException("해당하는 회원이 존재하지 않습니다."));
+
+        // 임시 비밀번호 생성 (UUID 사용)
+        String temporaryPassword = UUID.randomUUID().toString();
+
+        // 임시 비밀번호를 암호화하여 저장
+        member.setPassword(passwordEncoder.encode(temporaryPassword));
+        memberRepository.save(member);
+
+        return temporaryPassword;
+    }
+
+    // 임시 비밀번호 생성
+    private String generateTempPassword() {
+        // 임시 비밀번호를 생성하는 로직 (예: 랜덤 문자열)
+        return UUID.randomUUID().toString().substring(0, 8);  // 예시로 8자리 랜덤 문자열 생성
+    }
+
 }
