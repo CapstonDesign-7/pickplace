@@ -23,13 +23,20 @@
         .welcome-message {
             font-size: 24px;
         }
-        .logout-btn {
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
             padding: 10px 20px;
-            background-color: #ff4444;
+            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+        }
+        .logout-btn {
+            background-color: #ff4444;
         }
         .content {
             background-color: #f5f5f5;
@@ -42,7 +49,10 @@
 <div class="container">
     <div class="header">
         <h1 class="welcome-message">사용자 대시보드</h1>
-        <button class="logout-btn" id="logout-btn">로그아웃</button>
+        <div class="button-group">
+            <button class="btn" onclick="window.location.href='/mypage.html'">마이페이지</button>
+            <button class="logout-btn" id="logout-btn">로그아웃</button>
+        </div>
     </div>
     <div class="content">
         <h2>내 정보</h2>
@@ -53,33 +63,23 @@
 </div>
 
 <script>
-    // API 요청 시 사용할 공통 함수
     async function fetchWithAuth(url, options = {}) {
         const token = localStorage.getItem('token');
         if (!token) {
             throw new Error('No token found');
         }
-
-        // Authorization 헤더 추가
         const headers = {
             ...options.headers,
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
         };
-
         try {
-            const response = await fetch(url, {
-                ...options,
-                headers
-            });
-
+            const response = await fetch(url, { ...options, headers });
             if (response.status === 401) {
-                // 인증 실패 시 로그인 페이지로 리디렉션
                 localStorage.removeItem('token');
                 window.location.href = '/index.html';
                 return;
             }
-
             return response;
         } catch (error) {
             console.error('API request failed:', error);
@@ -87,23 +87,23 @@
         }
     }
 
-    // 페이지 로드 시 사용자 정보 로드
     async function loadUserInfo() {
         try {
             const response = await fetchWithAuth('/api/members/me');
             if (response.ok) {
                 const userData = await response.json();
                 document.getElementById('user-info').innerHTML = `
-                        <p>아이디: ${userData.id}</p>
-                        <p>역할: 일반 사용자</p>
-                    `;
+                    <p>아이디: ${userData.id}</p>
+                    <p>이름: ${userData.name}</p>
+                    <p>이메일: ${userData.email}</p>
+                    <p>전화번호: ${userData.phoneNumber}</p>
+                `;
             }
         } catch (error) {
             console.error('Failed to load user info:', error);
         }
     }
 
-    // 페이지 로드 시 실행
     document.addEventListener('DOMContentLoaded', async () => {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -128,7 +128,6 @@
         }
     });
 
-    // 로그아웃 처리
     document.getElementById('logout-btn').addEventListener('click', () => {
         localStorage.removeItem('token');
         window.location.href = '/index.html';

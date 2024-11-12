@@ -2,13 +2,15 @@ package com.example.pickplace.member.controller;
 
 import com.example.pickplace.member.controller.dto.JoinRequest;
 import com.example.pickplace.member.controller.dto.LoginRequest;
+import com.example.pickplace.member.controller.dto.UpdatePasswordRequest;
+import com.example.pickplace.member.controller.dto.UpdateProfileRequest;
 import com.example.pickplace.member.repository.entity.Member;
+import com.example.pickplace.member.response.ApiResponse;
 import com.example.pickplace.member.response.LoginResponse;
+import com.example.pickplace.member.response.MemberResponse;
 import com.example.pickplace.member.service.JwtService;
 import com.example.pickplace.member.service.MemberService;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,7 @@ public class MemberController {
     private final MemberService memberService;
     private final JwtService jwtService;
 
+    // 회원가입 기능
     @PostMapping("/join")
     public ResponseEntity<ApiResponse> join(@RequestBody @Valid JoinRequest joinRequest) {
         log.info("회원가입 요청: {}", joinRequest.getId());
@@ -34,6 +37,7 @@ public class MemberController {
         return ResponseEntity.ok(new ApiResponse("회원가입이 완료되었습니다.", true));
     }
 
+    // 로그인 기능
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
         log.info("로그인 요청: {}", loginRequest.getId());
@@ -43,6 +47,27 @@ public class MemberController {
         return ResponseEntity.ok(new LoginResponse(token, "로그인이 완료되었습니다.", true));
     }
 
+    // 프로필 업데이트 기능
+    @PostMapping("/update-profile")
+    public ResponseEntity<ApiResponse> updateProfile(@RequestBody @Valid UpdateProfileRequest updateRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+
+        memberService.updateProfile(userId, updateRequest);
+        return ResponseEntity.ok(new ApiResponse("프로필이 성공적으로 업데이트되었습니다.", true));
+    }
+
+    // 비밀번호 변경 기능
+    @PostMapping("/update-password")
+    public ResponseEntity<ApiResponse> updatePassword(@RequestBody @Valid UpdatePasswordRequest passwordRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+
+        memberService.updatePassword(userId, passwordRequest);
+        return ResponseEntity.ok(new ApiResponse("비밀번호가 성공적으로 변경되었습니다.", true));
+    }
+
+    // 인증된 사용자 정보(id, 회원 정보) 가져옴
     @GetMapping("/me")
     public ResponseEntity<MemberResponse> getMyInfo() {
         // SecurityContext에서 현재 인증된 사용자 정보를 가져옴
@@ -55,26 +80,11 @@ public class MemberController {
         // 응답 데이터 생성
         MemberResponse response = new MemberResponse(
                 member.getId(),
-                member.getRole().name(),
-                member.getName()
+                member.getName(),
+                member.getEmail(),
+                member.getPhoneNumber()
         );
 
         return ResponseEntity.ok(response);
-    }
-
-
-    @Getter
-    @AllArgsConstructor
-    private static class ApiResponse {
-        private String message;
-        private boolean success;
-    }
-    // 응답 DTO
-    @Getter
-    @AllArgsConstructor
-    private static class MemberResponse {
-        private String id;
-        private String role;
-        private String name;
     }
 }

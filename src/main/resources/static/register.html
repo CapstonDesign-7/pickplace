@@ -130,5 +130,20 @@
         window.location.href = '/';
     });
 </script>
+<script>
+    // 현재 날짜로부터 18년 전 날짜 계산
+    const today = new Date();
+    const maxYear = today.getFullYear() - 18; // 18년 전 연도
+
+    // 날짜 입력 필드에 min과 max 값 설정 (연도만 제한, 월일은 반영되지 않음)
+    const maxDateString = maxYear + "-12-31"; // 18년 전 연도까지 전체 날짜 선택 가능
+    const minDateString = "1900-01-01"; // 너무 이른 날짜를 방지 (예: 1900년부터 시작)
+
+    // 날짜 입력 필드에 max만 설정 (18년 전까지 선택 가능)
+    const birthDateInput = document.getElementById('birthdate');
+    birthDateInput.setAttribute('max', maxDateString); // 18년 전 12월 31일까지 선택 가능
+    birthDateInput.setAttribute('min', minDateString); // 날짜가 너무 이르지 않도록 최소 값 설정
+</script>
+
 </body>
 </html>

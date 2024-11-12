@@ -2,6 +2,8 @@ package com.example.pickplace.member.service;
 
 import com.example.pickplace.member.controller.dto.JoinRequest;
 import com.example.pickplace.member.controller.dto.LoginRequest;
+import com.example.pickplace.member.controller.dto.UpdatePasswordRequest;
+import com.example.pickplace.member.controller.dto.UpdateProfileRequest;
 import com.example.pickplace.member.repository.MemberRepository;
 import com.example.pickplace.member.repository.entity.Member;
 import com.example.pickplace.member.repository.entity.Role;
@@ -22,7 +24,7 @@ public class MemberServiceImpl  implements MemberService{
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
-
+    // 회원 가입
     @Override
     @Transactional
     public String join(JoinRequest joinRequest) {
@@ -45,6 +47,7 @@ public class MemberServiceImpl  implements MemberService{
         return "success";
     }
 
+    // 로그인
     @Override
     @Transactional(readOnly = true)
     public Member login(LoginRequest loginRequest) {
@@ -58,10 +61,34 @@ public class MemberServiceImpl  implements MemberService{
         return member;
     }
 
+    // id 존재 확인
     @Override
     @Transactional(readOnly = true)
     public Member findById(String id) {
         return memberRepository.findById(id)
                 .orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
+    }
+
+    // 프로필 업데이트
+    @Transactional
+    public void updateProfile(String userId, UpdateProfileRequest updateRequest) {
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
+
+        member.updateProfile(updateRequest.getName(), updateRequest.getPhoneNumber(),
+                updateRequest.getEmail());
+    }
+
+    // 비밀번호 업데이트
+    @Transactional
+    public void updatePassword(String userId, UpdatePasswordRequest passwordRequest) {
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
+
+        if (!passwordEncoder.matches(passwordRequest.getCurrentPassword(), member.getPassword())) {
+            throw new InvalidPasswordException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        member.setPassword(passwordEncoder.encode(passwordRequest.getNewPassword()));
     }
 }

@@ -48,4 +48,16 @@ public class Member {
 
     @Column(nullable = false)
     private boolean enabled = true;
+
+    public void updateProfile(String name, String phoneNumber, String email) {
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.birth = birth;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
 }

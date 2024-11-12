@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .back-btn, .logout-btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .content {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <button class="back-btn" onclick="window.location.href='/user.html'">대시보드로 돌아가기</button>
+        <button class="logout-btn" id="logout-btn">로그아웃</button>
+    </div>
+
+    <div class="content">
+        <h2>프로필 수정</h2>
+        <div id="profile-form">
+            <div class="form-group">
+                <label for="name">이름</label>
+                <input type="text" id="name" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">전화번호</label>
+                <input type="text" id="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input type="email" id="email" required>
+            </div>
+            <button class="btn" onclick="updateProfile()">프로필 수정</button>
+        </div>
+    </div>
+
+    <div class="content" style="margin-top: 20px;">
+        <h2>비밀번호 변경</h2>
+        <div id="password-form">
+            <div class="form-group">
+                <label for="current-password">현재 비밀번호</label>
+                <input type="password" id="current-password" required>
+            </div>
+            <div class="form-group">
+                <label for="new-password">새 비밀번호</label>
+                <input type="password" id="new-password" required>
+            </div>
+            <button class="btn" onclick="updatePassword()">비밀번호 변경</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function fetchWithAuth(url, options = {}) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/index.html';
+            return;
+        }
+        const headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+        return await fetch(url, { ...options, headers });
+    }
+
+    async function loadProfile() {
+        try {
+            const response = await fetchWithAuth('/api/members/me');
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('name').value = data.name;
+                document.getElementById('phone').value = data.phoneNumber;
+                document.getElementById('email').value = data.email;
+            }
+        } catch (error) {
+            console.error('Failed to load profile:', error);
+        }
+    }
+
+    async function updateProfile() {
+        const profileData = {
+            name: document.getElementById('name').value,
+            phoneNumber: document.getElementById('phone').value,
+            email: document.getElementById('email').value
+        };
+        try {
+            const response = await fetchWithAuth('/api/members/update-profile', {
+                method: 'POST',
+                body: JSON.stringify(profileData)
+            });
+            if (response.ok) {
+                alert('프로필이 성공적으로 업데이트되었습니다.');
+            } else {
+                alert('프로필 업데이트 실패');
+            }
+        } catch (error) {
+            console.error('Failed to update profile:', error);
+        }
+    }
+
+    async function updatePassword() {
+        const passwordData = {
+            currentPassword: document.getElementById('current-password').value,
+            newPassword: document.getElementById('new-password').value
+        };
+        try {
+            const response = await fetchWithAuth('/api/members/update-password', {
+                method: 'POST',
+                body: JSON.stringify(passwordData)
+            });
+            if (response.ok) {
+                alert('비밀번호가 성공적으로 변경되었습니다.');
+                document.getElementById('current-password').value = '';
+                document.getElementById('new-password').value = '';
+            } else {
+                alert('비밀번호 변경 실패');
+            }
+        } catch (error) {
+            console.error('Failed to update password:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadProfile);
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        window.location.href = '/index.html';
+    });
+</script>
+</body>
+</html>

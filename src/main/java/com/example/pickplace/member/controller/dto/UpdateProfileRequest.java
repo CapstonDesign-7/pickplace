@@ -9,17 +9,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class JoinRequest {
-
-    @NotBlank(message = "아이디는 필수입니다.")
-    @Size(min = 4, max = 20, message = "아이디는 4자 이상 20자 이하로 입력해주세요.")
-    private String id;
-
-    @NotBlank(message = "비밀번호는 필수 입력값입니다.")
-    @Pattern(
-            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$",
-            message = "비밀번호는 8자 이상이며, 영문자, 숫자, 특수문자를 포함해야 합니다.")
-    private String password;
+public class UpdateProfileRequest {
 
     @NotBlank(message = "이름은 필수입니다.")
     @Size(min = 2, max = 10, message = "이름은 2자 이상 10자 이하로 입력해주세요.")
@@ -38,8 +28,4 @@ public class JoinRequest {
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Past(message = "생일은 과거 날짜여야 합니다.")
     private LocalDate birth;
-
-    private char gender;
-
-    // role 필드는 입력받지 않도록 설정, 기본값은 Member 엔티티에서 설정
 }

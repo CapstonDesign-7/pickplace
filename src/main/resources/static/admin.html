@@ -77,7 +77,7 @@
         const token = localStorage.getItem('token');
         if (!token) {
             alert('로그인이 필요합니다.');
-            window.location.href = '/login.html';
+            window.location.href = '/index.html';
             return;
         }
 
@@ -86,7 +86,7 @@
             const payload = JSON.parse(atob(token.split('.')[1]));
             if (payload.role !== 'ADMIN') {
                 alert('관리자 권한이 필요합니다.');
-                window.location.href = '/login.html';
+                window.location.href = '/index.html';
                 return;
             }
 
@@ -97,14 +97,14 @@
         } catch (error) {
             console.error('Error:', error);
             alert('토큰이 유효하지 않습니다.');
-            window.location.href = '/login.html';
+            window.location.href = '/index.html';
         }
     });
 
     // 로그아웃 처리
     document.getElementById('logout-btn').addEventListener('click', () => {
         localStorage.removeItem('token');
-        window.location.href = '/login.html';
+        window.location.href = '/index.html';
     });
 
     // 관리자 기능들
