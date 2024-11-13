@@ -48,10 +48,11 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1 class="welcome-message">사용자 대시보드</h1>
+        <h1 class="welcome-message">유저 페이지</h1>
         <div class="button-group">
             <button class="btn" onclick="window.location.href='/mypage.html'">마이페이지</button>
             <button class="logout-btn" id="logout-btn">로그아웃</button>
+            <button onclick="goHome()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">홈으로 돌아가기</button>
         </div>
     </div>
     <div class="content">
@@ -77,7 +78,7 @@
             const response = await fetch(url, { ...options, headers });
             if (response.status === 401) {
                 localStorage.removeItem('token');
-                window.location.href = '/index.html';
+                window.location.href = '/login.html';
                 return;
             }
             return response;
@@ -108,7 +109,7 @@
         const token = localStorage.getItem('token');
         if (!token) {
             alert('로그인이 필요합니다.');
-            window.location.href = '/index.html';
+            window.location.href = '/login.html';
             return;
         }
 
@@ -116,7 +117,7 @@
             const payload = JSON.parse(atob(token.split('.')[1]));
             if (payload.role !== 'USER') {
                 alert('접근 권한이 없습니다.');
-                window.location.href = '/index.html';
+                window.location.href = '/login.html';
                 return;
             }
 
@@ -124,14 +125,20 @@
         } catch (error) {
             console.error('Error:', error);
             alert('토큰이 유효하지 않습니다.');
-            window.location.href = '/index.html';
+            window.location.href = '/login.html';
         }
     });
 
+    // 로그아웃
     document.getElementById('logout-btn').addEventListener('click', () => {
         localStorage.removeItem('token');
-        window.location.href = '/index.html';
+        window.location.href = '/login.html';
     });
+
+    // 홈 버튼 클릭 시 index.html로 이동
+    function goHome() {
+        window.location.href = '/index.html';  // 홈 페이지로 리디렉션
+    }
 </script>
 </body>
 </html>

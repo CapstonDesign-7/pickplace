@@ -1,9 +1,10 @@
-package com.example.pickplace.member.service;
+package com.example.pickplace.member.service.impl;
 
 import com.example.pickplace.member.controller.dto.*;
 import com.example.pickplace.member.repository.MemberRepository;
 import com.example.pickplace.member.repository.entity.Member;
 import com.example.pickplace.member.repository.entity.Role;
+import com.example.pickplace.member.service.MemberService;
 import com.example.pickplace.member.service.exception.DuplicateMemberException;
 import com.example.pickplace.member.service.exception.InvalidPasswordException;
 import com.example.pickplace.member.service.exception.MemberNotFoundException;
@@ -18,7 +19,7 @@ import java.util.UUID;
 @Service
 @Validated
 @RequiredArgsConstructor
-public class MemberServiceImpl  implements MemberService{
+public class MemberServiceImpl  implements MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;

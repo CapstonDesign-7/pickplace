@@ -60,8 +60,9 @@
 <body>
 <div class="container">
     <div class="header">
-        <button class="back-btn" onclick="window.location.href='/user.html'">돌아가기</button>
+        <button class="back-btn" onclick="window.location.href='/user.html'">유저 정보 페이지</button>
         <button class="logout-btn" id="logout-btn">로그아웃</button>
+        <button onclick="goHome()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">홈으로 돌아가기</button>
     </div>
 
     <div class="content">
@@ -104,7 +105,7 @@
         const token = localStorage.getItem('token');
         if (!token) {
             alert('로그인이 필요합니다.');
-            window.location.href = '/index.html';
+            window.location.href = '/login.html';
             return;
         }
         const headers = {
@@ -174,10 +175,16 @@
 
     document.addEventListener('DOMContentLoaded', loadProfile);
 
+    // 로그아웃
     document.getElementById('logout-btn').addEventListener('click', () => {
         localStorage.removeItem('token');
-        window.location.href = '/index.html';
+        window.location.href = '/login.html';
     });
+
+    // 홈 버튼 클릭 시 index.html로 이동
+    function goHome() {
+        window.location.href = '/index.html';  // 홈 페이지로 리디렉션
+    }
 </script>
 </body>
 </html>

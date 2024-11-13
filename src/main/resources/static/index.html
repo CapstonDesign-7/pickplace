@@ -1,99 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Index</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body>
-<div class="flex justify-center items-center h-screen">
-    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md">
-        <h2 class="text-2xl font-bold mb-4">Login</h2>
-        <form id="login-form">
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2" for="id">
-                    ID
-                </label>
-                <input
-                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="id" type="text" placeholder="ID">
-            </div>
-            <div class="mb-6">
-                <label class="block text-gray-700 font-bold mb-2" for="password">
-                    Password
-                </label>
-                <input
-                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="password" type="password" placeholder="Password">
-            </div>
-            <div class="flex items-center justify-between">
-                <button
-                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                        type="button" id="login-btn">
-                    로그인
-                </button>
-                <a
-                    class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
-                    href="register.html" id="register-btn">
-                회원가입
-                </a>
-            </div>
-            <div class="flex justify-between mt-4">
-                <a
-                        class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
-                        href="findIdPwd.html" id="find-id-btn">
-                    아이디 찾기
-                </a>
-                <a
-                        class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
-                        href="findIdPwd.html" id="find-password-btn">
-                    비밀번호 찾기
-                </a>
-            </div>
-        </form>
+<div class="flex flex-col h-screen">
+  <header class="p-4 flex justify-between items-center bg-gray-100">
+    <div>
+      <a href="#" class="text-blue-500 font-semibold" onclick="scrollToPhotoReview()">포토리뷰</a>
     </div>
+    <div id="auth-buttons" class="flex space-x-4">
+      <!-- 로그인 및 회원가입 버튼 -->
+      <button id="login-btn" class="text-blue-500 mr-4">로그인</button>
+      <button id="signup-btn" class="text-blue-500">회원가입</button>
+
+      <!-- 프로필 아이콘 (로그인된 상태에서만 보임) -->
+      <div id="profile-icon" class="hidden relative">
+        <button class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white" id="profile-btn">
+          <span class="text-lg">👤</span>
+        </button>
+        <div id="profile-menu" class="hidden absolute right-0 mt-2 w-40 bg-white shadow-md rounded-lg">
+          <ul>
+            <li>
+              <a href="/mypage.html" class="block px-4 py-2 text-gray-800">마이페이지</a>
+            </li>
+            <li>
+              <a href="/user.html" class="block px-4 py-2 text-gray-800">사용자 관리</a>
+            </li>
+            <li>
+              <button id="logout-btn" class="block px-4 py-2 text-gray-800 w-full text-left">로그아웃</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow flex flex-col justify-center items-center">
+    <button
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none"
+            onclick="startTour()">
+      시작하기
+    </button>
+  </main>
+
+  <section id="photo-review" class="hidden p-8">
+    <div class="flex justify-center items-center">
+      <input type="text" placeholder="검색어를 입력하세요..."
+             class="shadow appearance-none border rounded w-2/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+      <button class="ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">리뷰 쓰기</button>
+    </div>
+  </section>
 </div>
 
 <script>
-    // 로그인 버튼
-    document.getElementById('login-btn').addEventListener('click', async () => {
-        const id = document.getElementById('id').value;
-        const password = document.getElementById('password').value;
+  // 로그인 상태 체크
+  function checkLoginStatus() {
+    const token = localStorage.getItem('token');
+    const loginBtn = document.getElementById('login-btn');
+    const signupBtn = document.getElementById('signup-btn');
+    const profileIcon = document.getElementById('profile-icon');
 
-        try {
-            const response = await fetch('/api/members/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ id, password })
-            });
+    if (token) {
+      // 로그인 상태: 프로필 아이콘 보이기, 로그인/회원가입 버튼 숨기기
+      loginBtn.style.display = 'none';
+      signupBtn.style.display = 'none';
+      profileIcon.classList.remove('hidden');
+    } else {
+      // 비로그인 상태: 로그인/회원가입 버튼 보이기, 프로필 아이콘 숨기기
+      loginBtn.style.display = 'inline-block';
+      signupBtn.style.display = 'inline-block';
+      profileIcon.classList.add('hidden');
+    }
+  }
 
-            const data = await response.json();
+  // 프로필 버튼 클릭 시 드롭다운 토글
+  document.getElementById('profile-btn').addEventListener('click', () => {
+    const menu = document.getElementById('profile-menu');
+    menu.classList.toggle('hidden');
+  });
 
-            if (response.ok) {
-                // 로그인 성공 시 JWT 토큰을 localStorage에 저장
-                localStorage.setItem('token', data.token);
-                alert(data.message);
+  // 로그인 버튼 클릭 시 처리
+  document.getElementById('login-btn').addEventListener('click', () => {
+    window.location.href = '/login.html';
+  });
 
-                // 사용자 역할에 따라 페이지 리다이렉트
-                const decodedToken = JSON.parse(atob(data.token.split('.')[1]));
-                if (decodedToken.role === 'ADMIN') {
-                    window.location.href = '/admin.html';
-                } else {
-                    window.location.href = '/user.html';
-                }
-            } else {
-                // 로그인 실패 시
-                alert(data.message || '로그인에 실패했습니다.');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('로그인 중 에러가 발생했습니다.');
-        }
-    });
+  // 회원가입 버튼 클릭 시 처리
+  document.getElementById('signup-btn').addEventListener('click', () => {
+    window.location.href = '/register.html';
+  });
+
+  // 시작하기 버튼 클릭 시 처리
+  async function startTour() {
+    try {
+      // 로그인 상태 확인을 위해 인증된 API 호출
+      const response = await fetchWithAuth('/api/members/me');
+      if (response && response.ok) {
+        window.location.href = '/tourplan.html'; // 인증 성공 시 이동
+      }
+    } catch (error) {
+      window.location.href = '/login.html'; // 인증 실패 시 로그인 페이지로 이동
+    }
+  }
+
+  // 로그인 인증을 체크하는 fetchWithAuth 함수
+  async function fetchWithAuth(url, options = {}) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No token found');
+    }
+    const headers = {
+      ...options.headers,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+    try {
+      const response = await fetch(url, { ...options, headers });
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+        return;
+      }
+      return response;
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
+  }
+
+  // 로그아웃
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    localStorage.removeItem('token');
+    window.location.href = '/login.html';
+  });
+
+  // 페이지가 로드될 때 로그인 상태 확인
+  checkLoginStatus();
 </script>
 </body>
 </html>

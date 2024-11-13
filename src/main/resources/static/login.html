@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="flex justify-center items-center h-screen">
+    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-4">Login</h2>
+        <form id="login-form">
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2" for="id">
+                    ID
+                </label>
+                <input
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="id" type="text" placeholder="ID">
+            </div>
+            <div class="mb-6">
+                <label class="block text-gray-700 font-bold mb-2" for="password">
+                    Password
+                </label>
+                <input
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="password" type="password" placeholder="Password">
+            </div>
+            <div class="flex items-center justify-between">
+                <button
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        type="button" id="login-btn">
+                    로그인
+                </button>
+                <a
+                        class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
+                        href="register.html" id="register-btn">
+                    회원가입
+                </a>
+            </div>
+            <div class="flex justify-between mt-4">
+                <a
+                        class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
+                        href="findIdPwd.html" id="find-id-btn">
+                    아이디 찾기
+                </a>
+                <a
+                        class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
+                        href="findIdPwd.html" id="find-password-btn">
+                    비밀번호 찾기
+                </a>
+            </div>
+        </form>
+
+        <!-- 홈 버튼 추가 -->
+        <div class="flex justify-center mt-4">
+            <button onclick="goHome()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                홈으로 돌아가기
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // 로그인 버튼
+    document.getElementById('login-btn').addEventListener('click', async () => {
+        const id = document.getElementById('id').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch('/api/members/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // 로그인 성공 시 JWT 토큰을 localStorage에 저장
+                localStorage.setItem('token', data.token);
+                alert(data.message);
+
+                // 사용자 역할에 따라 페이지 리다이렉트
+                const decodedToken = JSON.parse(atob(data.token.split('.')[1]));
+                if (decodedToken.role === 'ADMIN') {
+                    window.location.href = '/admin.html';
+                } else {
+                    window.location.href = '/index.html';
+                }
+            } else {
+                // 로그인 실패 시
+                alert(data.message || '로그인에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('로그인 중 에러가 발생했습니다.');
+        }
+    });
+
+    // 홈 버튼 클릭 시 index.html로 이동
+    function goHome() {
+        window.location.href = '/index.html';  // 홈 페이지로 리디렉션
+    }
+</script>
+
+</body>
+</html>
