@@ -1,9 +1,8 @@
 package com.example.pickplace.member.handler;
 
+import com.example.pickplace.member.response.ApiResponse;
 import com.example.pickplace.member.response.ErrorResponse;
-import com.example.pickplace.member.service.exception.DuplicateMemberException;
-import com.example.pickplace.member.service.exception.InvalidPasswordException;
-import com.example.pickplace.member.service.exception.MemberNotFoundException;
+import com.example.pickplace.member.service.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.util.stream.Collectors;
 
@@ -63,5 +63,38 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse("서버 오류가 발생했습니다.", "INTERNAL_SERVER_ERROR"));
+    }
+
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public ResponseEntity<ApiResponse> handleReviewNotFoundException(ReviewNotFoundException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse(e.getMessage(), false));
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiResponse> handleUnauthorizedException(UnauthorizedException e) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ApiResponse(e.getMessage(), false));
+    }
+
+    @ExceptionHandler(FileUploadException.class)
+    public ResponseEntity<ApiResponse> handleFileUploadException(FileUploadException e) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse("파일 업로드에 실패했습니다: " + e.getMessage(), false));
+    }
+
+    @ExceptionHandler(FileDeleteException.class)
+    public ResponseEntity<ApiResponse> handleFileDeleteException(FileDeleteException e) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse("파일 삭제에 실패했습니다: " + e.getMessage(), false));
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ApiResponse> handleMissingPart(MissingServletRequestPartException ex) {
+        return ResponseEntity.badRequest().body(new ApiResponse("필수 입력 항목이 누락되었습니다.", false));
     }
 }

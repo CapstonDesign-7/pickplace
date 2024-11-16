@@ -48,10 +48,15 @@
   </main>
 
   <section id="photo-review" class="hidden p-8">
-    <div class="flex justify-center items-center">
+    <div class="flex justify-center items-center mb-8">
       <input type="text" placeholder="검색어를 입력하세요..."
              class="shadow appearance-none border rounded w-2/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-      <button class="ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">리뷰 쓰기</button>
+      <button onclick="goToWriteReview()" class="ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">리뷰 쓰기</button>
+    </div>
+
+    <!-- 리뷰 목록 컨테이너 -->
+    <div id="reviews-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- 리뷰들이 여기에 동적으로 추가됨 -->
     </div>
   </section>
 </div>
@@ -135,6 +140,90 @@
   document.getElementById('logout-btn').addEventListener('click', () => {
     localStorage.removeItem('token');
     window.location.href = '/login.html';
+  });
+
+  // 포토리뷰 버튼 클릭시 실행
+  function scrollToPhotoReview() {
+    const photoReview = document.getElementById('photo-review');
+    photoReview.classList.remove('hidden');
+    photoReview.scrollIntoView({ behavior: 'smooth' });
+    loadReviews(); // 리뷰 목록 새로고침
+  }
+
+  // 리뷰 목록을 가져오는 함수
+  async function loadReviews() {
+    try {
+      const response = await fetch('/api/reviews', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        const reviews = await response.json();
+        console.log('Received reviews:', reviews); // 디버깅용
+        displayReviews(reviews);
+      } else {
+        console.error('리뷰를 불러오는데 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  // 리뷰 표시
+  function displayReviews(reviews) {
+    const container = document.getElementById('reviews-container');
+    container.innerHTML = '';
+
+    reviews.forEach(review => {
+      const reviewElement = document.createElement('div');
+      reviewElement.className = 'bg-white rounded-lg shadow-md overflow-hidden mb-4';
+
+      let imageHtml = '';
+      if (review.imageUrls && review.imageUrls.length > 0) {
+        imageHtml = `
+        <div class="relative" style="padding-bottom: 66.67%;">
+          <img src="${review.imageUrls[0]}"
+               alt="리뷰 이미지"
+               class="absolute h-full w-full object-cover">
+        </div>
+      `;
+      }
+
+      reviewElement.innerHTML = `
+      ${imageHtml}
+      <div class="p-4">
+        <h3 class="text-lg font-semibold mb-2">${review.title}</h3>
+        <p class="text-gray-600 mb-2">${review.content}</p>
+        <div class="text-sm text-gray-500">
+          <span>작성자: ${review.writerName}</span>
+          <br>
+          <span>작성일: ${new Date(review.createdAt).toLocaleDateString()}</span>
+        </div>
+      </div>
+    `;
+
+      container.appendChild(reviewElement);
+    });
+  }
+
+  function goToWriteReview() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('리뷰 작성을 위해서는 로그인이 필요합니다.');
+      window.location.href = '/login.html';
+      return;
+    }
+    window.location.href = '/writeReview.html';
+  }
+
+  // 페이지 로드시 리뷰 목록 불러오기
+  document.addEventListener('DOMContentLoaded', () => {
+    const photoReviewSection = document.getElementById('photo-review');
+    if (photoReviewSection) {
+      loadReviews();
+    }
   });
 
   // 페이지가 로드될 때 로그인 상태 확인

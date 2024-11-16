@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>리뷰 작성</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <h1 class="text-2xl font-bold mb-6">리뷰 작성</h1>
+
+    <form id="review-form" class="space-y-6">
+      <div>
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
+          제목
+        </label>
+        <input type="text" id="title" name="title" required
+               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+      </div>
+
+      <div>
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="content">
+          내용
+        </label>
+        <textarea id="content" name="content" rows="4" required
+                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-gray-700 text-sm font-bold mb-2">
+          사진 첨부
+        </label>
+        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+          <div class="space-y-1 text-center">
+            <div class="flex flex-wrap gap-2" id="preview-container"></div>
+            <div class="flex text-sm text-gray-600">
+              <label for="images" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                <span>Upload files</span>
+                <input id="images" name="images" type="file" class="sr-only" multiple accept="image/*" onchange="handleImageUpload(event)">
+              </label>
+            </div>
+            <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-4">
+        <button type="button" onclick="cancelReview()"
+                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+          취소
+        </button>
+        <button type="submit"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          작성
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // 로그인 체크
+  function checkAuth() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('리뷰 작성 권한이 없습니다. 로그인이 필요합니다.');
+      window.location.href = '/login.html';
+    }
+  }
+
+  // 이미지 미리보기 처리
+  function handleImageUpload(event) {
+    const files = event.target.files;
+    const previewContainer = document.getElementById('preview-container');
+
+    for (const file of files) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const previewWrapper = document.createElement('div');
+        previewWrapper.className = 'relative';
+
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.className = 'h-20 w-20 object-cover rounded';
+
+        previewWrapper.appendChild(img);
+        previewContainer.appendChild(previewWrapper);
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // 리뷰 작성 취소
+  function cancelReview() {
+    if(confirm('작성을 취소하시겠습니까?')) {
+      window.location.href = '/index.html';
+    }
+  }
+
+  // 리뷰 제출 처리
+  document.getElementById('review-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append('title', document.getElementById('title').value);
+    formData.append('content', document.getElementById('content').value);
+
+    const imageFiles = document.getElementById('images').files;
+    for (const file of imageFiles) {
+      formData.append('images', file);
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        alert('리뷰가 성공적으로 작성되었습니다.');
+        window.location.href = '/index.html';
+      } else {
+        const errorData = await response.json();
+        alert('리뷰 작성에 실패했습니다: ' + (errorData.message || '알 수 없는 오류가 발생했습니다.'));
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('리뷰 작성 중 오류가 발생했습니다.');
+    }
+  });
+
+  // 페이지 로드 시 권한 체크
+  checkAuth();
+</script>
+</body>
+</html>
