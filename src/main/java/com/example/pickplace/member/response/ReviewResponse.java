@@ -7,7 +7,6 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -28,7 +27,7 @@ public class ReviewResponse {
                 .writerName(review.getMember().getName())
                 .imageUrls(review.getImages().stream()
                         .map(ReviewImage::getImageUrl)
-                        .collect(Collectors.toList()))
+                        .toList())
                 .createdAt(review.getCreatedAt())
                 .updatedAt(review.getUpdatedAt())
                 .build();

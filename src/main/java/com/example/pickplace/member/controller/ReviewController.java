@@ -3,7 +3,6 @@ package com.example.pickplace.member.controller;
 import com.example.pickplace.member.controller.dto.ReviewRequest;
 import com.example.pickplace.member.response.ReviewResponse;
 import com.example.pickplace.member.service.ReviewService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -18,7 +17,6 @@ import java.util.List;
 public class ReviewController {
 
     private final ReviewService reviewService;
-    private final ObjectMapper objectMapper;  // Jackson ObjectMapper 주입
 
     @PostMapping
     public ResponseEntity<ReviewResponse> createReview(

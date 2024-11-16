@@ -72,7 +72,7 @@ public class ReviewServiceImpl implements ReviewService {
         // 기존 이미지 URL 저장
         List<String> oldImageUrls = review.getImages().stream()
                 .map(ReviewImage::getImageUrl)
-                .collect(Collectors.toList());
+                .toList();
 
         // 기존 이미지 모두 삭제
         review.getImages().clear();
@@ -109,7 +109,7 @@ public class ReviewServiceImpl implements ReviewService {
         // 이미지 URL 목록 저장
         List<String> imageUrls = review.getImages().stream()
                 .map(ReviewImage::getImageUrl)
-                .collect(Collectors.toList());
+                .toList();
 
         // 리뷰 삭제
         reviewRepository.delete(review);
@@ -138,6 +138,6 @@ public class ReviewServiceImpl implements ReviewService {
         List<Review> reviews = reviewRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
         return reviews.stream()
                 .map(ReviewResponse::from)
-                .collect(Collectors.toList());
+                .toList();
     }
 }
