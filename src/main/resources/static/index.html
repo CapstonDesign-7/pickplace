@@ -8,121 +8,94 @@
 </head>
 <body>
 <div class="flex flex-col h-screen">
+  <!-- 헤더 영역 -->
   <header class="p-4 flex justify-between items-center bg-gray-100">
-    <div>
+    <!-- 네비게이션 링크 -->
+    <nav>
       <a href="#" class="text-blue-500 font-semibold" onclick="scrollToPhotoReview()">포토리뷰</a>
-    </div>
+    </nav>
+
+    <!-- 인증 버튼 영역 -->
     <div id="auth-buttons" class="flex space-x-4">
-      <!-- 로그인 및 회원가입 버튼 -->
+      <!-- 비로그인 상태 버튼 -->
       <button id="login-btn" class="text-blue-500 mr-4">로그인</button>
       <button id="signup-btn" class="text-blue-500">회원가입</button>
 
-      <!-- 프로필 아이콘 (로그인된 상태에서만 보임) -->
+      <!-- 로그인 상태 프로필 -->
       <div id="profile-icon" class="hidden relative">
-        <button class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white" id="profile-btn">
+        <button class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white"
+                id="profile-btn">
           <span class="text-lg">👤</span>
         </button>
+        <!-- 프로필 드롭다운 메뉴 -->
         <div id="profile-menu" class="hidden absolute right-0 mt-2 w-40 bg-white shadow-md rounded-lg">
           <ul>
-            <li>
-              <a href="/mypage.html" class="block px-4 py-2 text-gray-800">마이페이지</a>
-            </li>
-            <li>
-              <a href="/user.html" class="block px-4 py-2 text-gray-800">사용자 관리</a>
-            </li>
-            <li>
-              <button id="logout-btn" class="block px-4 py-2 text-gray-800 w-full text-left">로그아웃</button>
-            </li>
+            <li><a href="/mypage.html" class="block px-4 py-2 text-gray-800">마이페이지</a></li>
+            <li><a href="/user.html" class="block px-4 py-2 text-gray-800">사용자 관리</a></li>
+            <li><button id="logout-btn" class="block px-4 py-2 text-gray-800 w-full text-left">로그아웃</button></li>
           </ul>
         </div>
       </div>
     </div>
   </header>
 
+  <!-- 메인 컨텐츠 영역 -->
   <main class="flex-grow flex flex-col justify-center items-center">
-    <button
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none"
+    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none"
             onclick="startTour()">
       시작하기
     </button>
   </main>
 
+  <!-- 포토리뷰 섹션 -->
   <section id="photo-review" class="hidden p-8">
+    <!-- 검색 및 리뷰 작성 버튼 -->
     <div class="flex justify-center items-center mb-8">
-      <input type="text" placeholder="검색어를 입력하세요..."
+      <input type="text"
+             placeholder="검색어를 입력하세요..."
              class="shadow appearance-none border rounded w-2/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-      <button onclick="goToWriteReview()" class="ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">리뷰 쓰기</button>
+      <button onclick="goToWriteReview()"
+              class="ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        리뷰 쓰기
+      </button>
     </div>
 
     <!-- 리뷰 목록 컨테이너 -->
     <div id="reviews-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- 리뷰들이 여기에 동적으로 추가됨 -->
+      <!-- 리뷰 카드들이 동적으로 추가됨 -->
     </div>
   </section>
 </div>
 
+<!-- 자바스크립트 모듈 -->
 <script>
-  // 로그인 상태 체크
-  function checkLoginStatus() {
-    const token = localStorage.getItem('token');
-    const loginBtn = document.getElementById('login-btn');
-    const signupBtn = document.getElementById('signup-btn');
-    const profileIcon = document.getElementById('profile-icon');
+  // 인증 관련 기능
+  const auth = {
+    checkLoginStatus() {
+      const token = localStorage.getItem('token');
+      const loginBtn = document.getElementById('login-btn');
+      const signupBtn = document.getElementById('signup-btn');
+      const profileIcon = document.getElementById('profile-icon');
 
-    if (token) {
-      // 로그인 상태: 프로필 아이콘 보이기, 로그인/회원가입 버튼 숨기기
-      loginBtn.style.display = 'none';
-      signupBtn.style.display = 'none';
-      profileIcon.classList.remove('hidden');
-    } else {
-      // 비로그인 상태: 로그인/회원가입 버튼 보이기, 프로필 아이콘 숨기기
-      loginBtn.style.display = 'inline-block';
-      signupBtn.style.display = 'inline-block';
-      profileIcon.classList.add('hidden');
-    }
-  }
-
-  // 프로필 버튼 클릭 시 드롭다운 토글
-  document.getElementById('profile-btn').addEventListener('click', () => {
-    const menu = document.getElementById('profile-menu');
-    menu.classList.toggle('hidden');
-  });
-
-  // 로그인 버튼 클릭 시 처리
-  document.getElementById('login-btn').addEventListener('click', () => {
-    window.location.href = '/login.html';
-  });
-
-  // 회원가입 버튼 클릭 시 처리
-  document.getElementById('signup-btn').addEventListener('click', () => {
-    window.location.href = '/register.html';
-  });
-
-  // 시작하기 버튼 클릭 시 처리
-  async function startTour() {
-    try {
-      // 로그인 상태 확인을 위해 인증된 API 호출
-      const response = await fetchWithAuth('/api/members/me');
-      if (response && response.ok) {
-        window.location.href = '/tourplan.html'; // 인증 성공 시 이동
+      if (token) {
+        [loginBtn, signupBtn].forEach(btn => btn.style.display = 'none');
+        profileIcon.classList.remove('hidden');
+      } else {
+        [loginBtn, signupBtn].forEach(btn => btn.style.display = 'inline-block');
+        profileIcon.classList.add('hidden');
       }
-    } catch (error) {
-      window.location.href = '/login.html'; // 인증 실패 시 로그인 페이지로 이동
-    }
-  }
+    },
 
-  // 로그인 인증을 체크하는 fetchWithAuth 함수
-  async function fetchWithAuth(url, options = {}) {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('No token found');
-    }
-    const headers = {
-      ...options.headers,
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    };
-    try {
+    async fetchWithAuth(url, options = {}) {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token found');
+
+      const headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+
       const response = await fetch(url, { ...options, headers });
       if (response.status === 401) {
         localStorage.removeItem('token');
@@ -130,198 +103,126 @@
         return;
       }
       return response;
-    } catch (error) {
-      console.error('API request failed:', error);
-      throw error;
+    },
+
+    logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login.html';
     }
+  };
+
+  // 리뷰 관련 기능
+  const reviews = {
+    // 리뷰 템플릿 생성
+    createReviewTemplate(review) {
+      const imageHtml = review.imageUrls?.length > 0
+              ? `<div class="relative" style="padding-bottom: 66.67%;">
+                         <img src="${review.imageUrls[0]}" alt="리뷰 이미지"
+                              class="absolute h-full w-full object-cover">
+                       </div>`
+              : '';
+
+      return `
+                    ${imageHtml}
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold mb-2">${review.title}</h3>
+                        <p class="text-gray-600 mb-2">${review.content}</p>
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="text-sm text-gray-500">
+                                <span>작성자: ${review.writerName}</span>
+                                <br>
+                                <span>작성일: ${new Date(review.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <button onclick="reviews.handleLikeClick(event, ${review.id})"
+                                        class="like-button flex items-center space-x-1">
+                                    <svg class="w-6 h-6 ${review.isLiked ? 'text-red-500' : 'text-gray-400'}"
+                                         fill="${review.isLiked ? 'currentColor' : 'none'}"
+                                         stroke="currentColor"
+                                         viewBox="0 0 24 24">
+                                        <path stroke-linecap="round"
+                                              stroke-linejoin="round"
+                                              stroke-width="2"
+                                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                                        </path>
+                                    </svg>
+                                    <span class="like-count">${review.likeCount || 0}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+    },
+
+    // 리뷰 목록 로드
+    async loadReviews() {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+        const response = await fetch('/api/reviews', { headers });
+        if (response.ok) {
+          const reviews = await response.json();
+          this.displayReviews(reviews);
+        }
+      } catch (error) {
+        console.error('리뷰 로드 실패:', error);
+      }
+    },
+
+    // 리뷰 표시
+    displayReviews(reviews) {
+      const container = document.getElementById('reviews-container');
+      container.innerHTML = reviews.map(review => {
+        const reviewElement = document.createElement('div');
+        reviewElement.className = 'bg-white rounded-lg shadow-md overflow-hidden mb-4';
+        reviewElement.innerHTML = this.createReviewTemplate(review);
+        return reviewElement.outerHTML;
+      }).join('');
+    },
+
+    // 좋아요 처리
+    async handleLikeClick(event, reviewId) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('로그인이 필요한 기능입니다.');
+          window.location.href = '/login.html';
+          return;
+        }
+
+        const response = await fetch(`/api/reviews/${reviewId}/like`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          this.loadReviews();
+        }
+      } catch (error) {
+        console.error('좋아요 처리 실패:', error);
+        alert('좋아요 처리 중 오류가 발생했습니다.');
+      }
+    }
+  };
+
+  // 페이지 네비게이션 함수들
+  function startTour() {
+    auth.fetchWithAuth('/api/members/me')
+            .then(response => {
+              if (response?.ok) window.location.href = '/tourplan.html';
+            })
+            .catch(() => window.location.href = '/login.html');
   }
 
-  // 로그아웃
-  document.getElementById('logout-btn').addEventListener('click', () => {
-    localStorage.removeItem('token');
-    window.location.href = '/login.html';
-  });
-
-  // 포토리뷰 버튼 클릭시 실행
   function scrollToPhotoReview() {
     const photoReview = document.getElementById('photo-review');
     photoReview.classList.remove('hidden');
     photoReview.scrollIntoView({ behavior: 'smooth' });
-    loadReviews(); // 리뷰 목록 새로고침
-  }
-
-  // 리뷰 목록을 로드하는 함수
-  async function loadReviews() {
-    try {
-      const token = localStorage.getItem('token');
-      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-
-      const response = await fetch('/api/reviews', { headers });
-
-      if (response.ok) {
-        const reviews = await response.json();
-        displayReviews(reviews);
-      } else {
-        console.error('리뷰를 불러오는데 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  }
-
-  // 리뷰 표시
-  // displayReviews 함수 수정 - 좋아요 수 표시 강조
-  function displayReviews(reviews) {
-    const container = document.getElementById('reviews-container');
-    container.innerHTML = '';
-
-    reviews.forEach(review => {
-      const reviewElement = document.createElement('div');
-      reviewElement.className = 'bg-white rounded-lg shadow-md overflow-hidden mb-4';
-
-      let imageHtml = '';
-      if (review.imageUrls && review.imageUrls.length > 0) {
-        imageHtml = `
-        <div class="relative" style="padding-bottom: 66.67%;">
-          <img src="${review.imageUrls[0]}"
-               alt="리뷰 이미지"
-               class="absolute h-full w-full object-cover">
-        </div>
-      `;
-      }
-
-      reviewElement.innerHTML = `
-      ${imageHtml}
-      <div class="p-4">
-        <h3 class="text-lg font-semibold mb-2">${review.title}</h3>
-        <p class="text-gray-600 mb-2">${review.content}</p>
-        <div class="flex items-center justify-between mb-2">
-          <div class="text-sm text-gray-500">
-            <span>작성자: ${review.writerName}</span>
-            <br>
-            <span>작성일: ${new Date(review.createdAt).toLocaleDateString()}</span>
-          </div>
-          <div class="flex items-center">
-            <button onclick="handleLikeClick(event, ${review.id})" class="like-button flex items-center space-x-1">
-              <svg class="w-6 h-6 ${review.isLiked ? 'text-red-500' : 'text-gray-400'}"
-                   fill="${review.isLiked ? 'currentColor' : 'none'}"
-                   stroke="currentColor"
-                   viewBox="0 0 24 24">
-                <path stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
-                </path>
-              </svg>
-              <span class="like-count font-bold">${review.likeCount || 0}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-
-      container.appendChild(reviewElement);
-    });
-  }
-
-  // 좋아요 처리 후 리뷰 목록 새로고침
-  async function handleLikeClick(event, reviewId) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('로그인이 필요한 기능입니다.');
-        window.location.href = '/login.html';
-        return;
-      }
-
-      const response = await fetch(`/api/reviews/${reviewId}/like`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        // 좋아요 처리 후 전체 리뷰 목록을 다시 로드하여 정렬 상태 유지
-        loadReviews();
-      } else if (response.status === 401) {
-        alert('로그인이 필요한 기능입니다.');
-        window.location.href = '/login.html';
-      } else {
-        const errorData = await response.json();
-        alert(errorData.message || '좋아요 처리 중 오류가 발생했습니다.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('좋아요 처리 중 오류가 발생했습니다.');
-    }
-  }
-
-  // 좋아요 버튼 업데이트 함수
-  function updateLikeButton(button, data) {
-    if (!button) return;
-
-    const svg = button.querySelector('svg');
-    const countSpan = button.querySelector('.like-count');
-
-    if (svg) {
-      if (data.isLiked) {
-        svg.classList.remove('text-gray-400');
-        svg.classList.add('text-red-500');
-        svg.setAttribute('fill', 'currentColor');
-      } else {
-        svg.classList.remove('text-red-500');
-        svg.classList.add('text-gray-400');
-        svg.setAttribute('fill', 'none');
-      }
-    }
-
-    if (countSpan) {
-      countSpan.textContent = data.likeCount || 0;
-    }
-  }
-
-  // 좋아요 토글 함수
-  async function toggleLike(reviewId) {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('로그인이 필요한 기능입니다.');
-        window.location.href = '/login.html';
-        return;
-      }
-
-      const response = await fetch(`/api/reviews/${reviewId}/like`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // 좋아요 상태와 카운트 업데이트
-        const likeButton = event.target.closest('.like-button');
-        const svg = likeButton.querySelector('svg');
-        const countSpan = likeButton.querySelector('.like-count');
-
-        if (data.isLiked) {
-          svg.classList.replace('text-gray-400', 'text-red-500');
-          svg.setAttribute('fill', 'currentColor');
-        } else {
-          svg.classList.replace('text-red-500', 'text-gray-400');
-          svg.setAttribute('fill', 'none');
-        }
-
-        countSpan.textContent = data.likeCount;
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('좋아요 처리 중 오류가 발생했습니다.');
-    }
+    reviews.loadReviews();
   }
 
   function goToWriteReview() {
@@ -334,16 +235,31 @@
     window.location.href = '/writeReview.html';
   }
 
-  // 페이지 로드시 리뷰 목록 불러오기
+  // 이벤트 리스너 설정
   document.addEventListener('DOMContentLoaded', () => {
+    auth.checkLoginStatus();
+
+    // 버튼 이벤트 리스너
+    document.getElementById('login-btn')?.addEventListener('click', () => {
+      window.location.href = '/login.html';
+    });
+
+    document.getElementById('signup-btn')?.addEventListener('click', () => {
+      window.location.href = '/register.html';
+    });
+
+    document.getElementById('profile-btn')?.addEventListener('click', () => {
+      document.getElementById('profile-menu').classList.toggle('hidden');
+    });
+
+    document.getElementById('logout-btn')?.addEventListener('click', auth.logout);
+
+    // 초기 리뷰 로드
     const photoReviewSection = document.getElementById('photo-review');
     if (photoReviewSection) {
-      loadReviews();
+      reviews.loadReviews();
     }
   });
-
-  // 페이지가 로드될 때 로그인 상태 확인
-  checkLoginStatus();
 </script>
 </body>
 </html>
