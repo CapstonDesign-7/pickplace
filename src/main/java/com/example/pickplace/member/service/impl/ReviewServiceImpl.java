@@ -1,8 +1,10 @@
 package com.example.pickplace.member.service.impl;
 
 import com.example.pickplace.member.controller.dto.ReviewRequest;
+import com.example.pickplace.member.repository.LikeRepository;
 import com.example.pickplace.member.repository.MemberRepository;
 import com.example.pickplace.member.repository.ReviewRepository;
+import com.example.pickplace.member.repository.entity.Like;
 import com.example.pickplace.member.repository.entity.Member;
 import com.example.pickplace.member.repository.entity.Review;
 import com.example.pickplace.member.repository.entity.ReviewImage;
@@ -13,13 +15,13 @@ import com.example.pickplace.member.service.exception.MemberNotFoundException;
 import com.example.pickplace.member.service.exception.ReviewNotFoundException;
 import com.example.pickplace.member.service.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +32,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository reviewRepository;
     private final MemberRepository memberRepository;
     private final ImageUploadService imageUploadService;
+    private final LikeRepository likeRepository;
 
     @Override
     @Transactional
@@ -56,7 +59,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         Review savedReview = reviewRepository.save(review);
-        return ReviewResponse.from(savedReview);
+        return ReviewResponse.from(savedReview, memberId);
     }
 
     @Override
@@ -93,7 +96,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         review.update(request.getTitle(), request.getContent());
-        return ReviewResponse.from(review);
+        return ReviewResponse.from(review, memberId);
     }
 
     @Override
@@ -119,25 +122,60 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewResponse getReview(Long reviewId) {
+    public int getLikeCount(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
-        return ReviewResponse.from(review);
+        return review.getLikeCount();
+    }
+
+    @Override
+    public ReviewResponse getReview(Long reviewId, String currentUserId) {  // 매개변수 추가
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
+        return ReviewResponse.from(review, currentUserId);
     }
 
     @Override
     public List<ReviewResponse> getMyReviews(String memberId) {
         return reviewRepository.findByMemberId(memberId).stream()
-                .map(ReviewResponse::from)
+                .map(review -> ReviewResponse.from(review, memberId))  // memberId 전달
                 .collect(Collectors.toList());
     }
 
     // 리뷰 목록 조회
     @Override
-    public List<ReviewResponse> getAllReviews() {
-        List<Review> reviews = reviewRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+    public List<ReviewResponse> getAllReviews(String currentUserId) {
+        List<Review> reviews = reviewRepository.findAllOrderByLikesCountAndCreatedAtDesc();
         return reviews.stream()
-                .map(ReviewResponse::from)
-                .toList();
+                .map(review -> ReviewResponse.from(review, currentUserId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void toggleLike(String memberId, Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("회원을 찾을 수 없습니다."));
+
+        Optional<Like> existingLike = likeRepository.findByMemberIdAndReviewId(memberId, reviewId);
+
+        if (existingLike.isPresent()) {
+            // 이미 좋아요가 있으면 제거
+            likeRepository.delete(existingLike.get());
+        } else {
+            // 좋아요가 없으면 추가
+            Like like = Like.builder()
+                    .member(member)
+                    .review(review)
+                    .build();
+            likeRepository.save(like);
+        }
+    }
+
+    @Override
+    public boolean isLikedByMember(String memberId, Long reviewId) {
+        return likeRepository.existsByMemberIdAndReviewId(memberId, reviewId);
     }
 }

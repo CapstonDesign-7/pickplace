@@ -36,6 +36,9 @@ public class Review {
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImage> images = new ArrayList<>();
 
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like> likes = new ArrayList<>();
+
     @CreatedDate
     private LocalDateTime createdAt;
 
@@ -46,6 +49,17 @@ public class Review {
     public void addImage(ReviewImage image) {
         this.images.add(image);
         image.setReview(this);
+    }
+
+    // 좋아요 수를 반환하는 메서드 추가
+    public int getLikeCount() {
+        return likes.size();
+    }
+
+    // 특정 사용자가 좋아요를 눌렀는지 확인하는 메서드
+    public boolean isLikedBy(String memberId) {
+        return likes.stream()
+                .anyMatch(like -> like.getMember().getId().equals(memberId));
     }
 
     public void update(String title, String content) {

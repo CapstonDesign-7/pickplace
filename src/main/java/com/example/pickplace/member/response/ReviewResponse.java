@@ -19,7 +19,10 @@ public class ReviewResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static ReviewResponse from(Review review) {
+    private int likeCount;      // 좋아요 기능
+    private boolean isLiked;
+
+    public static ReviewResponse from(Review review, String currentUserId) {
         return ReviewResponse.builder()
                 .id(review.getId())
                 .title(review.getTitle())
@@ -30,6 +33,8 @@ public class ReviewResponse {
                         .toList())
                 .createdAt(review.getCreatedAt())
                 .updatedAt(review.getUpdatedAt())
+                .likeCount(review.getLikeCount())
+                .isLiked(currentUserId != null && review.isLikedBy(currentUserId))
                 .build();
     }
 }

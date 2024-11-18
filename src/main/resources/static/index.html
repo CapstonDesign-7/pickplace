@@ -150,18 +150,16 @@
     loadReviews(); // 리뷰 목록 새로고침
   }
 
-  // 리뷰 목록을 가져오는 함수
+  // 리뷰 목록을 로드하는 함수
   async function loadReviews() {
     try {
-      const response = await fetch('/api/reviews', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const token = localStorage.getItem('token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+      const response = await fetch('/api/reviews', { headers });
 
       if (response.ok) {
         const reviews = await response.json();
-        console.log('Received reviews:', reviews); // 디버깅용
         displayReviews(reviews);
       } else {
         console.error('리뷰를 불러오는데 실패했습니다.');
@@ -172,6 +170,7 @@
   }
 
   // 리뷰 표시
+  // displayReviews 함수 수정 - 좋아요 수 표시 강조
   function displayReviews(reviews) {
     const container = document.getElementById('reviews-container');
     container.innerHTML = '';
@@ -196,16 +195,133 @@
       <div class="p-4">
         <h3 class="text-lg font-semibold mb-2">${review.title}</h3>
         <p class="text-gray-600 mb-2">${review.content}</p>
-        <div class="text-sm text-gray-500">
-          <span>작성자: ${review.writerName}</span>
-          <br>
-          <span>작성일: ${new Date(review.createdAt).toLocaleDateString()}</span>
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-sm text-gray-500">
+            <span>작성자: ${review.writerName}</span>
+            <br>
+            <span>작성일: ${new Date(review.createdAt).toLocaleDateString()}</span>
+          </div>
+          <div class="flex items-center">
+            <button onclick="handleLikeClick(event, ${review.id})" class="like-button flex items-center space-x-1">
+              <svg class="w-6 h-6 ${review.isLiked ? 'text-red-500' : 'text-gray-400'}"
+                   fill="${review.isLiked ? 'currentColor' : 'none'}"
+                   stroke="currentColor"
+                   viewBox="0 0 24 24">
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                </path>
+              </svg>
+              <span class="like-count font-bold">${review.likeCount || 0}</span>
+            </button>
+          </div>
         </div>
       </div>
     `;
 
       container.appendChild(reviewElement);
     });
+  }
+
+  // 좋아요 처리 후 리뷰 목록 새로고침
+  async function handleLikeClick(event, reviewId) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('로그인이 필요한 기능입니다.');
+        window.location.href = '/login.html';
+        return;
+      }
+
+      const response = await fetch(`/api/reviews/${reviewId}/like`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        // 좋아요 처리 후 전체 리뷰 목록을 다시 로드하여 정렬 상태 유지
+        loadReviews();
+      } else if (response.status === 401) {
+        alert('로그인이 필요한 기능입니다.');
+        window.location.href = '/login.html';
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || '좋아요 처리 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('좋아요 처리 중 오류가 발생했습니다.');
+    }
+  }
+
+  // 좋아요 버튼 업데이트 함수
+  function updateLikeButton(button, data) {
+    if (!button) return;
+
+    const svg = button.querySelector('svg');
+    const countSpan = button.querySelector('.like-count');
+
+    if (svg) {
+      if (data.isLiked) {
+        svg.classList.remove('text-gray-400');
+        svg.classList.add('text-red-500');
+        svg.setAttribute('fill', 'currentColor');
+      } else {
+        svg.classList.remove('text-red-500');
+        svg.classList.add('text-gray-400');
+        svg.setAttribute('fill', 'none');
+      }
+    }
+
+    if (countSpan) {
+      countSpan.textContent = data.likeCount || 0;
+    }
+  }
+
+  // 좋아요 토글 함수
+  async function toggleLike(reviewId) {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('로그인이 필요한 기능입니다.');
+        window.location.href = '/login.html';
+        return;
+      }
+
+      const response = await fetch(`/api/reviews/${reviewId}/like`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // 좋아요 상태와 카운트 업데이트
+        const likeButton = event.target.closest('.like-button');
+        const svg = likeButton.querySelector('svg');
+        const countSpan = likeButton.querySelector('.like-count');
+
+        if (data.isLiked) {
+          svg.classList.replace('text-gray-400', 'text-red-500');
+          svg.setAttribute('fill', 'currentColor');
+        } else {
+          svg.classList.replace('text-red-500', 'text-gray-400');
+          svg.setAttribute('fill', 'none');
+        }
+
+        countSpan.textContent = data.likeCount;
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('좋아요 처리 중 오류가 발생했습니다.');
+    }
   }
 
   function goToWriteReview() {
