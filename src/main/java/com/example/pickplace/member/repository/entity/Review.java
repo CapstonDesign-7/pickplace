@@ -36,8 +36,9 @@ public class Review {
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImage> images = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Like> likes = new ArrayList<>();
+    private List<Like> likes = new ArrayList<>();  // null이 아닌 빈 리스트로 초기화
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -53,7 +54,7 @@ public class Review {
 
     // 좋아요 수를 반환하는 메서드 추가
     public int getLikeCount() {
-        return likes.size();
+        return likes != null ? likes.size() : 0;  // null 체크 추가
     }
 
     // 특정 사용자가 좋아요를 눌렀는지 확인하는 메서드

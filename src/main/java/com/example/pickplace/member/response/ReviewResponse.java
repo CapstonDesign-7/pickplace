@@ -7,6 +7,7 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -18,8 +19,7 @@ public class ReviewResponse {
     private List<String> imageUrls;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    private int likeCount;      // 좋아요 기능
+    private int likeCount;
     private boolean isLiked;
 
     public static ReviewResponse from(Review review, String currentUserId) {
@@ -30,10 +30,10 @@ public class ReviewResponse {
                 .writerName(review.getMember().getName())
                 .imageUrls(review.getImages().stream()
                         .map(ReviewImage::getImageUrl)
-                        .toList())
+                        .collect(Collectors.toList()))
                 .createdAt(review.getCreatedAt())
                 .updatedAt(review.getUpdatedAt())
-                .likeCount(review.getLikeCount())
+                .likeCount(review.getLikeCount())  // null 안전 메서드 사용
                 .isLiked(currentUserId != null && review.isLikedBy(currentUserId))
                 .build();
     }
