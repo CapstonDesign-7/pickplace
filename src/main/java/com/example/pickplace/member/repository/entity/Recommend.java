@@ -16,12 +16,19 @@ public class Recommend {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "schedule_no")
     private Long id;
 
-    private String userId; // 사용자 ID, JWT에서 가져온 ID로 설정
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Member member; // 사용자 ID, JWT에서 가져온 ID로 설정
+
     private Integer groupSize;
+
+    @Column(name = "region_title")
     private String region;
+
     private String purpose;
+
     private String duration;
 
 }

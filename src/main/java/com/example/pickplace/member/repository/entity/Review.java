@@ -20,25 +20,30 @@ public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "review_no")
     private Long id;
 
     @Column(nullable = false)
     private String title;
 
+    // 지역 추가(일정에 맞게)
+//    @Column(nullable = false)
+//    @JoinColumn(name = "region_title")
+//    private String region;
+
     @Column(nullable = false)
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
     private Member member;
 
-    @Builder.Default  // Builder 패턴 사용 시 빈 ArrayList로 초기화
+    @Builder.Default
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImage> images = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Like> likes = new ArrayList<>();  // null이 아닌 빈 리스트로 초기화
+    private List<Like> likes = new ArrayList<>();
 
     @CreatedDate
     private LocalDateTime createdAt;

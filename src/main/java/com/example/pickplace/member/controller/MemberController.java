@@ -92,7 +92,6 @@ public class MemberController {
     public ResponseEntity<ApiResponse> findId(@RequestBody @Valid FindIdRequest findIdRequest) {
         log.info("아이디 찾기 요청: {}", findIdRequest);
         String userId = memberService.findIdByNameAndEmail(findIdRequest);
-
         // 이메일로 아이디 전송
         emailService.sendIdToEmail(findIdRequest.getEmail(), userId);
 
@@ -113,7 +112,7 @@ public class MemberController {
         return ResponseEntity.ok(new ApiResponse("이메일로 임시 비밀번호를 전송했습니다.", true));
     }
 
-    // 토큰 만료 확인
+    // 토큰 만료 확인 ( 미구현 )
     @GetMapping("/validate-token")
     public ResponseEntity<ApiResponse> validateToken(Authentication authentication) {
         // 이 엔드포인트에 도달했다는 것은 토큰이 유효하다는 의미

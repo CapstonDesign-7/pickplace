@@ -12,13 +12,13 @@ public class ReviewImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "image_no")
     private Long id;
 
     @Column(nullable = false)
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
     private Review review;
 
     // 연관관계 설정을 위한 메서드

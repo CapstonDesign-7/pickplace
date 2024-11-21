@@ -19,10 +19,12 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long user_no;
 
+    @Column(name = "user_ID")
     private String id;
 
     private String name;
 
+    @Column(name = "phone_no")
     private String phoneNumber;
 
     private String email;
@@ -33,6 +35,7 @@ public class Member {
 
     @JsonIgnore
     @Setter
+    @Column(name = "pwd")
     private String password;
 
     @Enumerated(EnumType.STRING)

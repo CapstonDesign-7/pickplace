@@ -16,6 +16,7 @@ public class Like {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "like_no")
     private Long idx;
 
     @ManyToOne(fetch = FetchType.LAZY)

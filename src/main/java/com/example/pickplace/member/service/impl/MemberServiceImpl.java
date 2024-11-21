@@ -97,10 +97,11 @@ public class MemberServiceImpl  implements MemberService {
     // 아이디 찾기 (이름과 이메일로 아이디 조회)
     @Override
     public String findIdByNameAndEmail(FindIdRequest request) {
-        memberRepository.findByNameAndEmail(request.getName(), request.getEmail())
+        Member member = memberRepository.findByNameAndEmail(request.getName(), request.getEmail())
                 .orElseThrow(() -> new MemberNotFoundException("이름과 이메일에 해당하는 회원이 존재하지 않습니다."));
 
-        return "아이디가 이메일로 전송되었습니다.";
+
+        return member.getId();
     }
 
     // 비밀번호 찾기 (아이디와 이메일로 임시 비밀번호 발급)

@@ -33,7 +33,7 @@ public class ReviewResponse {
                         .collect(Collectors.toList()))
                 .createdAt(review.getCreatedAt())
                 .updatedAt(review.getUpdatedAt())
-                .likeCount(review.getLikeCount())  // null 안전 메서드 사용
+                .likeCount(review.getLikeCount())
                 .isLiked(currentUserId != null && review.isLikedBy(currentUserId))
                 .build();
     }
