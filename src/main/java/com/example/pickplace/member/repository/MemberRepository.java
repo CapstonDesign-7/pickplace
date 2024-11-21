@@ -8,6 +8,7 @@ import java.util.Optional;
 // DB와 통신
 public interface MemberRepository extends JpaRepository<Member, Long> {
     boolean existsById(String id);
+    boolean existsByEmail(String email);
     Optional<Member> findById(String id);
 
     // 이름과 이메일로 사용자 찾기

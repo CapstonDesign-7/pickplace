@@ -29,7 +29,10 @@ public class MemberServiceImpl  implements MemberService {
     @Transactional
     public void join(JoinRequest joinRequest) {
         if (memberRepository.existsById(joinRequest.getId())) {
-            throw new DuplicateMemberException("이미 존재하는 회원입니다.");
+            throw new DuplicateMemberException("이미 존재하는 아이디입니다.");
+        }
+        if (memberRepository.existsByEmail(joinRequest.getEmail())) {
+            throw new DuplicateMemberException("이미 존재하는 이메일입니다.");
         }
 
         Member member = Member.builder()

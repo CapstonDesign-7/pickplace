@@ -48,6 +48,9 @@ public class Review {
 
     // 이미지 추가를 위한 편의 메서드
     public void addImage(ReviewImage image) {
+        if (this.images == null) {
+            this.images = new ArrayList<>();
+        }
         this.images.add(image);
         image.setReview(this);
     }
@@ -68,6 +71,7 @@ public class Review {
         this.content = content;
     }
 
+    // 작성자가 맞는지 확인
     public boolean isWriter(String memberId) {
         return this.member.getId().equals(memberId);
     }

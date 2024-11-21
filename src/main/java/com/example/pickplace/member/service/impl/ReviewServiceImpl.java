@@ -34,6 +34,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ImageUploadService imageUploadService;
     private final LikeRepository likeRepository;
 
+    // 리뷰 작성
     @Override
     @Transactional
     public ReviewResponse createReview(String memberId, ReviewRequest request, List<MultipartFile> images) {
@@ -62,6 +63,7 @@ public class ReviewServiceImpl implements ReviewService {
         return ReviewResponse.from(savedReview, memberId);
     }
 
+    // 리뷰 업데이트
     @Override
     @Transactional
     public ReviewResponse updateReview(String memberId, Long reviewId, ReviewRequest request, List<MultipartFile> images) {
@@ -75,12 +77,12 @@ public class ReviewServiceImpl implements ReviewService {
         // 기존 이미지 URL 저장
         List<String> oldImageUrls = review.getImages().stream()
                 .map(ReviewImage::getImageUrl)
-                .toList();
+                .collect(Collectors.toList());
 
         // 기존 이미지 모두 삭제
         review.getImages().clear();
 
-        // 새로운 이미지 업로드 및 추가
+        // 새로운 이미지가 있는 경우에만 기존 이미지 파일 삭제 및 새 이미지 업로드
         if (images != null && !images.isEmpty()) {
             // 기존 이미지 파일 삭제
             oldImageUrls.forEach(imageUploadService::deleteImage);
@@ -90,15 +92,32 @@ public class ReviewServiceImpl implements ReviewService {
             for (String imageUrl : newImageUrls) {
                 ReviewImage reviewImage = ReviewImage.builder()
                         .imageUrl(imageUrl)
+                        .review(review)
                         .build();
                 review.addImage(reviewImage);
             }
         }
 
+        // 제목과 내용 업데이트
         review.update(request.getTitle(), request.getContent());
+
         return ReviewResponse.from(review, memberId);
     }
 
+    // 리뷰 수정을 위한 불러오기
+    @Override
+    public ReviewResponse getReviewForEdit(String memberId, Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
+
+        if (!review.isWriter(memberId)) {
+            throw new UnauthorizedException("리뷰를 수정할 권한이 없습니다.");
+        }
+
+        return ReviewResponse.from(review, memberId);
+    }
+
+    // 리뷰 삭제
     @Override
     @Transactional
     public void deleteReview(String memberId, Long reviewId) {
@@ -112,7 +131,7 @@ public class ReviewServiceImpl implements ReviewService {
         // 이미지 URL 목록 저장
         List<String> imageUrls = review.getImages().stream()
                 .map(ReviewImage::getImageUrl)
-                .toList();
+                .collect(Collectors.toList());
 
         // 리뷰 삭제
         reviewRepository.delete(review);
@@ -121,6 +140,7 @@ public class ReviewServiceImpl implements ReviewService {
         imageUrls.forEach(imageUploadService::deleteImage);
     }
 
+    // 좋아요 수 카운팅
     @Override
     public int getLikeCount(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
@@ -128,6 +148,7 @@ public class ReviewServiceImpl implements ReviewService {
         return review.getLikeCount();
     }
 
+    // 특정 하나의 리뷰 가져오기
     @Override
     public ReviewResponse getReview(Long reviewId, String currentUserId) {  // 매개변수 추가
         Review review = reviewRepository.findById(reviewId)
@@ -135,6 +156,7 @@ public class ReviewServiceImpl implements ReviewService {
         return ReviewResponse.from(review, currentUserId);
     }
 
+    // 내 리뷰 가져오기
     @Override
     public List<ReviewResponse> getMyReviews(String memberId) {
         return reviewRepository.findByMemberId(memberId).stream()
@@ -142,7 +164,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .collect(Collectors.toList());
     }
 
-    // 리뷰 목록 조회
+    // 전체 리뷰 가져오기
     @Override
     public List<ReviewResponse> getAllReviews(String currentUserId) {
         List<Review> reviews = reviewRepository.findAllOrderByLikesCountAndCreatedAtDesc();
@@ -151,6 +173,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .collect(Collectors.toList());
     }
 
+    // 좋아요 토글 기능(켜짐/꺼짐)
     @Override
     @Transactional
     public void toggleLike(String memberId, Long reviewId) {
@@ -174,8 +197,10 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 
+    // 사용자가 좋아요 눌렀는지 확인
     @Override
     public boolean isLikedByMember(String memberId, Long reviewId) {
         return likeRepository.existsByMemberIdAndReviewId(memberId, reviewId);
     }
+
 }

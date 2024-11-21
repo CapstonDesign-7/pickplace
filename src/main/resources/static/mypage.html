@@ -1,189 +1,305 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마이페이지</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        .back-btn, .logout-btn {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .content {
-            background-color: #f5f5f5;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        .btn {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-    </style>
+    <title>사용자 관리</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <script src="/js/auth.js"></script>
 </head>
-<body>
-<div class="container">
-    <div class="header">
-        <button class="back-btn" onclick="window.location.href='/user.html'">유저 정보 페이지</button>
-        <button class="logout-btn" id="logout-btn">로그아웃</button>
-        <button onclick="goHome()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">홈으로 돌아가기</button>
+<body class="bg-gray-100">
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <!-- 뒤로 가기 버튼 -->
+    <div class="mb-6">
+        <button onclick="location.href='/index.html'"
+                class="flex items-center space-x-2 text-blue-500 hover:text-blue-700">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 class="h-5 w-5"
+                 viewBox="0 0 20 20"
+                 fill="currentColor">
+                <path fill-rule="evenodd"
+                      d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                      clip-rule="evenodd" />
+            </svg>
+            <span>홈으로 돌아가기</span>
+        </button>
     </div>
-
-    <div class="content">
-        <h2>프로필 수정</h2>
-        <div id="profile-form">
-            <div class="form-group">
-                <label for="name">이름</label>
-                <input type="text" id="name" required>
+    <!-- 프로필 섹션 -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-4">
+                <div class="w-20 h-20 rounded-full bg-gray-300 overflow-hidden">
+                    <img id="profile-image" src="/images/default-profile.png"
+                         alt="프로필 사진"
+                         class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h2 id="user-id" class="text-xl font-bold">사용자 ID</h2>
+                    <p id="user-email" class="text-gray-600">이메일</p>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="phone">전화번호</label>
-                <input type="text" id="phone" required>
-            </div>
-            <div class="form-group">
-                <label for="email">이메일</label>
-                <input type="email" id="email" required>
-            </div>
-            <button class="btn" onclick="updateProfile()">프로필 수정</button>
+            <button onclick="location.href='/profile-edit.html'"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                프로필 관리
+            </button>
         </div>
     </div>
 
-    <div class="content" style="margin-top: 20px;">
-        <h2>비밀번호 변경</h2>
-        <div id="password-form">
-            <div class="form-group">
-                <label for="current-password">현재 비밀번호</label>
-                <input type="password" id="current-password" required>
+    <!-- 컨텐츠 탭 -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex space-x-4 mb-6">
+            <button onclick="showContent('schedule')"
+                    class="tab-btn flex-1 py-2 px-4 rounded font-semibold focus:outline-none"
+                    id="schedule-tab">
+                나의 일정
+            </button>
+            <button onclick="showContent('review')"
+                    class="tab-btn flex-1 py-2 px-4 rounded font-semibold focus:outline-none"
+                    id="review-tab">
+                나의 리뷰
+            </button>
+        </div>
+
+        <!-- 컨텐츠 영역 -->
+        <div id="content-area" class="min-h-[400px]">
+            <!-- 일정 목록 -->
+            <div id="schedule-content" class="hidden">
+                <div class="space-y-4" id="schedule-list">
+                    <!-- 일정들이 여기에 동적으로 추가됨 -->
+                </div>
             </div>
-            <div class="form-group">
-                <label for="new-password">새 비밀번호</label>
-                <input type="password" id="new-password" required>
+
+            <!-- 리뷰 목록 -->
+            <div id="review-content" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="review-list">
+                    <!-- 리뷰들이 여기에 동적으로 추가됨 -->
+                </div>
             </div>
-            <button class="btn" onclick="updatePassword()">비밀번호 변경</button>
+        </div>
+
+        <!-- 작업 버튼 -->
+        <div class="flex justify-end space-x-4 mt-6">
+            <button onclick="editSelected()"
+                    class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+                수정
+            </button>
+            <button onclick="deleteSelected()"
+                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                삭제
+            </button>
         </div>
     </div>
 </div>
 
 <script>
-    async function fetchWithAuth(url, options = {}) {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert('로그인이 필요합니다.');
-            window.location.href = '/login.html';
-            return;
-        }
-        const headers = {
-            ...options.headers,
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        };
-        return await fetch(url, { ...options, headers });
-    }
+    let currentTab = 'schedule';
+    let selectedItems = new Set();
 
-    async function loadProfile() {
-        try {
-            const response = await fetchWithAuth('/api/members/me');
-            if (response.ok) {
-                const data = await response.json();
-                document.getElementById('name').value = data.name;
-                document.getElementById('phone').value = data.phoneNumber;
-                document.getElementById('email').value = data.email;
-            }
-        } catch (error) {
-            console.error('Failed to load profile:', error);
-        }
-    }
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadUserProfile();
+        showContent('schedule');
 
-    async function updateProfile() {
-        const profileData = {
-            name: document.getElementById('name').value,
-            phoneNumber: document.getElementById('phone').value,
-            email: document.getElementById('email').value
-        };
-        try {
-            const response = await fetchWithAuth('/api/members/update-profile', {
-                method: 'POST',
-                body: JSON.stringify(profileData)
-            });
-            if (response.ok) {
-                alert('프로필이 성공적으로 업데이트되었습니다.');
-            } else {
-                alert('프로필 업데이트 실패');
-            }
-        } catch (error) {
-            console.error('Failed to update profile:', error);
-        }
-    }
-
-    async function updatePassword() {
-        const passwordData = {
-            currentPassword: document.getElementById('current-password').value,
-            newPassword: document.getElementById('new-password').value
-        };
-        try {
-            const response = await fetchWithAuth('/api/members/update-password', {
-                method: 'POST',
-                body: JSON.stringify(passwordData)
-            });
-            if (response.ok) {
-                alert('비밀번호가 성공적으로 변경되었습니다.');
-                document.getElementById('current-password').value = '';
-                document.getElementById('new-password').value = '';
-            } else {
-                alert('비밀번호 변경 실패');
-            }
-        } catch (error) {
-            console.error('Failed to update password:', error);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', loadProfile);
-
-    // 로그아웃
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        localStorage.removeItem('token');
-        window.location.href = '/login.html';
+        // 탭 스타일 초기화
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.add('bg-gray-200', 'hover:bg-gray-300');
+        });
     });
 
-    // 홈 버튼 클릭 시 index.html로 이동
-    function goHome() {
-        window.location.href = '/index.html';  // 홈 페이지로 리디렉션
+    // 사용자 프로필 로드
+    async function loadUserProfile() {
+        try {
+            const response = await fetch('/api/members/me', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (response.ok) {
+                const userData = await response.json();
+                document.getElementById('user-id').textContent = userData.id;
+                document.getElementById('user-email').textContent = userData.email;
+                if (userData.profileImage) {
+                    document.getElementById('profile-image').src = userData.profileImage;
+                }
+            }
+        } catch (error) {
+            console.error('프로필 로드 실패:', error);
+        }
+    }
+
+    // 컨텐츠 표시 전환
+    async function showContent(type) {
+        currentTab = type;
+        selectedItems.clear();
+
+        // 탭 스타일 업데이트
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('bg-blue-500', 'text-white');
+            btn.classList.add('bg-gray-200');
+        });
+        document.getElementById(`${type}-tab`).classList.remove('bg-gray-200');
+        document.getElementById(`${type}-tab`).classList.add('bg-blue-500', 'text-white');
+
+        // 컨텐츠 영역 업데이트
+        document.getElementById('schedule-content').classList.add('hidden');
+        document.getElementById('review-content').classList.add('hidden');
+        document.getElementById(`${type}-content`).classList.remove('hidden');
+
+        // 데이터 로드
+        if (type === 'schedule') {
+            await loadSchedules();
+        } else {
+            await loadReviews();
+        }
+    }
+
+    // 일정 로드 (진행 중)
+    async function loadSchedules() {
+        // try {
+        //     const response = await fetch('/api/schedules/my', {
+        //         headers: {
+        //             'Authorization': `Bearer ${localStorage.getItem('token')}`
+        //         }
+        //     });
+        //
+        //     if (response.ok) {
+        //         const schedules = await response.json();
+        //         const container = document.getElementById('schedule-list');
+        //         container.innerHTML = schedules.map(schedule => `
+        //                 <div class="schedule-item p-4 border rounded hover:bg-gray-50 cursor-pointer flex justify-between items-center"
+        //                      data-id="${schedule.id}"
+        //                      onclick="toggleSelection(this)">
+        //                     <div>
+        //                         <h3 class="font-semibold">${schedule.title}</h3>
+        //                         <p class="text-sm text-gray-600">${new Date(schedule.startDate).toLocaleDateString()} - ${new Date(schedule.endDate).toLocaleDateString()}</p>
+        //                     </div>
+        //                     <div class="selection-indicator hidden">
+        //                         ✓
+        //                     </div>
+        //                 </div>
+        //             `).join('');
+        //     }
+        // } catch (error) {
+        //     console.error('일정 로드 실패:', error);
+        // }
+    }
+
+    // 리뷰 로드
+    async function loadReviews() {
+        try {
+            const response = await fetch('/api/reviews/my', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (response.ok) {
+                const reviews = await response.json();
+                const container = document.getElementById('review-list');
+                container.innerHTML = reviews.map(review => `
+                        <div class="review-item p-4 border rounded hover:bg-gray-50 cursor-pointer"
+                             data-id="${review.id}"
+                             onclick="toggleSelection(this)">
+                            ${review.imageUrls?.length > 0 ?
+                    `<img src="${review.imageUrls[0]}"
+                                      alt="리뷰 이미지"
+                                      class="w-full h-48 object-cover mb-2 rounded">` : ''}
+                            <h3 class="font-semibold">${review.title}</h3>
+                            <p class="text-sm text-gray-600 line-clamp-2">${review.content}</p>
+                            <div class="text-xs text-gray-500 mt-2">
+                                작성일: ${new Date(review.createdAt).toLocaleDateString()}
+                            </div>
+                            <div class="selection-indicator hidden absolute top-2 right-2">
+                                ✓
+                            </div>
+                        </div>
+                    `).join('');
+            }
+        } catch (error) {
+            console.error('리뷰 로드 실패:', error);
+        }
+    }
+
+    // 아이템 선택 토글
+    function toggleSelection(element) {
+        const id = element.dataset.id;
+        const indicator = element.querySelector('.selection-indicator');
+
+        if (selectedItems.has(id)) {
+            selectedItems.delete(id);
+            element.classList.remove('bg-blue-50');
+            indicator.classList.add('hidden');
+        } else {
+            selectedItems.add(id);
+            element.classList.add('bg-blue-50');
+            indicator.classList.remove('hidden');
+        }
+    }
+
+    // 선택된 아이템 수정
+    async function editSelected() {
+        if (selectedItems.size === 0) {
+            alert('수정할 항목을 선택해주세요.');
+            return;
+        }
+
+        if (selectedItems.size > 1) {
+            alert('한 번에 하나의 항목만 수정할 수 있습니다.');
+            return;
+        }
+
+        const id = selectedItems.values().next().value;
+        if (currentTab === 'review') {
+            window.location.href = `/editReview.html?id=${id}`;  // editReview.html로 이동
+        } else {
+            // 일정 수정 페이지로 이동 (일정 기능 구현 시 추가)
+            // window.location.href = `/editSchedule.html?id=${id}`;
+        }
+    }
+
+    // 선택된 아이템 삭제
+    async function deleteSelected() {
+        if (selectedItems.size === 0) {
+            alert('삭제할 항목을 선택해주세요.');
+            return;
+        }
+
+        if (!confirm('선택한 항목을 삭제하시겠습니까?')) {
+            return;
+        }
+
+        try {
+            const type = currentTab === 'review' ? 'reviews' : 'schedules';
+            const token = localStorage.getItem('token');
+
+            for (const id of selectedItems) {
+                const response = await fetch(`/api/${type}/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                        // Content-Type 헤더는 DELETE 요청에서 필요 없으므로 제거
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('삭제 실패');
+                }
+            }
+
+            alert('삭제가 완료되었습니다.');
+            selectedItems.clear();
+
+            // 현재 탭에 따라 목록 새로고침
+            if (currentTab === 'review') {
+                await loadReviews();
+            } else {
+                await loadSchedules();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('삭제 중 오류가 발생했습니다.');
+        }
     }
 </script>
 </body>

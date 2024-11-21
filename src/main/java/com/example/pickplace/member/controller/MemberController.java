@@ -112,4 +112,11 @@ public class MemberController {
         log.info("임시 비밀번호 전송 완료: {}", findPasswordRequest.getEmail());
         return ResponseEntity.ok(new ApiResponse("이메일로 임시 비밀번호를 전송했습니다.", true));
     }
+
+    // 토큰 만료 확인
+    @GetMapping("/validate-token")
+    public ResponseEntity<ApiResponse> validateToken(Authentication authentication) {
+        // 이 엔드포인트에 도달했다는 것은 토큰이 유효하다는 의미
+        return ResponseEntity.ok(new ApiResponse("토큰이 유효합니다.", true));
+    }
 }

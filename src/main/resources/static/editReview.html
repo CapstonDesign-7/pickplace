@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리뷰 수정</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <script src="/js/auth.js"></script>
+</head>
+<body class="bg-gray-100">
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold mb-6">리뷰 수정</h1>
+
+        <form id="edit-review-form" class="space-y-6">
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
+                    제목
+                </label>
+                <input type="text" id="title" name="title" required
+                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="content">
+                    내용
+                </label>
+                <textarea id="content" name="content" rows="4" required
+                          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    현재 이미지
+                </label>
+                <div id="current-images" class="flex flex-wrap gap-4 mb-4">
+                    <!-- 현재 이미지들이 여기에 표시됨 -->
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    새 이미지 추가
+                </label>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                    <div class="space-y-1 text-center">
+                        <div id="preview-container" class="flex flex-wrap gap-2 mb-4"></div>
+                        <div class="flex text-sm text-gray-600">
+                            <label for="images" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                                <span>Upload files</span>
+                                <input id="images" name="images" type="file" class="sr-only" multiple accept="image/*" onchange="handleImageUpload(event)">
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4">
+                <button type="button" onclick="window.location.href='/user.html'"
+                        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                    취소
+                </button>
+                <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    수정완료
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let reviewId;
+
+    // 토큰 확인
+    document.addEventListener('DOMContentLoaded', () => {
+        // 토큰 체크 시작
+        auth.startTokenCheck();
+
+        // 페이지 로드 시 API 요청에 공통 에러 핸들링 추가
+        window.addEventListener('unhandledrejection', event => {
+            if (event.reason.message === 'Failed to fetch') {
+                auth.handleLogout('서버와의 연결이 끊어졌습니다. 다시 로그인해 주세요.');
+            }
+        });
+    });
+
+    // 페이지 로드 시 리뷰 데이터 가져오기
+    document.addEventListener('DOMContentLoaded', async () => {
+        // URL에서 리뷰 ID 추출
+        const urlParams = new URLSearchParams(window.location.search);
+        reviewId = urlParams.get('id');
+
+        if (!reviewId) {
+            alert('리뷰 ID가 없습니다.');
+            window.location.href = '/user.html';
+            return;
+        }
+
+        await loadReviewData();
+    });
+
+    // 리뷰 데이터 로드
+    async function loadReviewData() {
+        try {
+            const response = await fetch(`/api/reviews/${reviewId}/edit`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (response.ok) {
+                const review = await response.json();
+
+                // 폼에 데이터 채우기
+                document.getElementById('title').value = review.title;
+                document.getElementById('content').value = review.content;
+
+                // 현재 이미지 표시
+                if (review.imageUrls && review.imageUrls.length > 0) {
+                    const container = document.getElementById('current-images');
+                    container.innerHTML = review.imageUrls.map((url, index) => `
+                            <div class="relative">
+                                <img src="${url}" alt="리뷰 이미지" class="w-32 h-32 object-cover rounded">
+                                <button type="button" onclick="removeCurrentImage(${index})"
+                                        class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                                    ×
+                                </button>
+                            </div>
+                        `).join('');
+                }
+            }
+        } catch (error) {
+            console.error('리뷰 데이터 로드 실패:', error);
+            alert('리뷰 데이터를 불러오는데 실패했습니다.');
+        }
+    }
+
+    // 이미지 미리보기
+    function handleImageUpload(event) {
+        const files = event.target.files;
+        const previewContainer = document.getElementById('preview-container');
+
+        for (const file of files) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'relative';
+                wrapper.innerHTML = `
+                        <img src="${e.target.result}" class="w-32 h-32 object-cover rounded">
+                        <button type="button" onclick="this.parentElement.remove()"
+                                class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                            ×
+                        </button>
+                    `;
+                previewContainer.appendChild(wrapper);
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // 현재 이미지 제거
+    function removeCurrentImage(index) {
+        const imageElement = document.querySelector(`#current-images > div:nth-child(${index + 1})`);
+        if (imageElement) {
+            imageElement.remove();
+        }
+    }
+
+    // 수정된 폼 제출
+    document.getElementById('edit-review-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append('title', document.getElementById('title').value);
+        formData.append('content', document.getElementById('content').value);
+
+        const imageFiles = document.getElementById('images').files;
+        for (const file of imageFiles) {
+            formData.append('images', file);
+        }
+
+        try {
+            const response = await fetch(`/api/reviews/${reviewId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                alert('리뷰가 성공적으로 수정되었습니다.');
+                window.location.href = '/mypage.html';
+            } else {
+                const error = await response.json();
+                alert(error.message || '리뷰 수정에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('리뷰 수정 중 오류가 발생했습니다.');
+        }
+    });
+</script>
+</body>
+</html>

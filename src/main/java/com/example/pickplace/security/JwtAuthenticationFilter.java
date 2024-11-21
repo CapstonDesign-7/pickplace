@@ -36,11 +36,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
 
-        log.info("인증 권한 헤더: {}", authHeader);
-
         // Authorization 헤더가 없거나 "Bearer "로 시작하지 않으면 그냥 다음 필터로 넘김
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.warn("Authorization 헤더가 없거나 Bearer로 시작하지 않음. 필터 체인 진행.");
             filterChain.doFilter(request, response);
             return;
         }

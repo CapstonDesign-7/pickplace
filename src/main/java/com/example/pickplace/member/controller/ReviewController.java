@@ -1,6 +1,7 @@
 package com.example.pickplace.member.controller;
 
 import com.example.pickplace.member.controller.dto.ReviewRequest;
+import com.example.pickplace.member.response.ApiResponse;
 import com.example.pickplace.member.response.ReviewResponse;
 import com.example.pickplace.member.service.ReviewService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
+    // 리뷰 작성
     @PostMapping
     public ResponseEntity<ReviewResponse> createReview(
             Authentication authentication,
@@ -33,31 +35,44 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.createReview(memberId, request, images));
     }
 
+    // 리뷰 업데이트
     @PutMapping("/{reviewId}")
     public ResponseEntity<ReviewResponse> updateReview(
             Authentication authentication,
-            @PathVariable Long reviewId,
-            @RequestPart ReviewRequest request,
-            @RequestPart(required = false) List<MultipartFile> images) {
+            @PathVariable("reviewId") Long reviewId,  // name 속성 추가
+            @ModelAttribute ReviewRequest request,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images) {
         String memberId = authentication.getName();
         return ResponseEntity.ok(reviewService.updateReview(memberId, reviewId, request, images));
     }
 
+    // 리뷰 삭제
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<Void> deleteReview(
+    public ResponseEntity<ApiResponse> deleteReview(
             Authentication authentication,
-            @PathVariable Long reviewId) {
+            @PathVariable(name = "reviewId") Long reviewId) {
         String memberId = authentication.getName();
         reviewService.deleteReview(memberId, reviewId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new ApiResponse("리뷰가 성공적으로 삭제되었습니다.", true));
     }
 
+    // 리뷰 수정
+    @GetMapping("/{reviewId}/edit")
+    public ResponseEntity<ReviewResponse> getReviewForEdit(
+            Authentication authentication,
+            @PathVariable("reviewId") Long reviewId) {
+        String memberId = authentication.getName();
+        return ResponseEntity.ok(reviewService.getReviewForEdit(memberId, reviewId));
+    }
+
+    // 전체 리뷰 가져오기
     @GetMapping
     public ResponseEntity<List<ReviewResponse>> getAllReviews(Authentication authentication) {
         String currentUserId = authentication != null ? authentication.getName() : null;
         return ResponseEntity.ok(reviewService.getAllReviews(currentUserId));
     }
 
+    // 특정 리뷰 가져오기(리뷰 수정 페이지에서 기존 정보 로딩, 상세 페이지 조회)
     @GetMapping("/{reviewId}")
     public ResponseEntity<ReviewResponse> getReview(
             @PathVariable Long reviewId,
@@ -66,17 +81,18 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getReview(reviewId, currentUserId));
     }
 
+    // 내 리뷰 가져오기
     @GetMapping("/my")
     public ResponseEntity<List<ReviewResponse>> getMyReviews(Authentication authentication) {
         String memberId = authentication.getName();
         return ResponseEntity.ok(reviewService.getMyReviews(memberId));
     }
 
+    // 좋아요 기능
     @PostMapping("/{reviewId}/like")
     public ResponseEntity<Map<String, Object>> toggleLike(
             Authentication authentication,
-            @PathVariable(name = "reviewId") Long reviewId) {  // name 속성 추가
-        log.debug("Toggle like for review: {}", reviewId);  // 디버깅용 로그
+            @PathVariable(name = "reviewId") Long reviewId) {
 
         if (authentication == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

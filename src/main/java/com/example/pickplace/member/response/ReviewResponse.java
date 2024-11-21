@@ -27,7 +27,7 @@ public class ReviewResponse {
                 .id(review.getId())
                 .title(review.getTitle())
                 .content(review.getContent())
-                .writerName(review.getMember().getName())
+                .writerName(review.getMember().getId())
                 .imageUrls(review.getImages().stream()
                         .map(ReviewImage::getImageUrl)
                         .collect(Collectors.toList()))

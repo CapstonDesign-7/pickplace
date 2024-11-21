@@ -10,6 +10,7 @@ public interface ReviewService {
     // 리뷰 작성 및 업데이트, 삭제 서비스
     ReviewResponse createReview(String memberId, ReviewRequest request, List<MultipartFile> images);
     ReviewResponse updateReview(String memberId, Long reviewId, ReviewRequest request, List<MultipartFile> images);
+    ReviewResponse getReviewForEdit(String memberId, Long reviewId);
     void deleteReview(String memberId, Long reviewId);
 
     // 리뷰 불러오기
