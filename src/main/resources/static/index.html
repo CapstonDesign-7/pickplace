@@ -41,7 +41,7 @@
   <!-- 메인 컨텐츠 영역 -->
   <main class="flex-grow flex flex-col justify-center items-center">
     <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none"
-            onclick="startTour()">
+            onclick="startSchedule()">
       시작하기
     </button>
   </main>
@@ -209,10 +209,10 @@
   };
 
   // 페이지 네비게이션 함수들
-  function startTour() {
+  function startSchedule() {
     auth.fetchWithAuth('/api/members/me')
             .then(response => {
-              if (response?.ok) window.location.href = '/tourplan.html';
+              if (response?.ok) window.location.href = '/schedule.html';
             })
             .catch(() => window.location.href = '/login.html');
   }

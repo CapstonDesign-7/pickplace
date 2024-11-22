@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
+import java.time.format.DateTimeParseException;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -97,4 +98,20 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse> handleMissingPart(MissingServletRequestPartException ex) {
         return ResponseEntity.badRequest().body(new ApiResponse("필수 입력 항목이 누락되었습니다.", false));
     }
+
+    @ExceptionHandler(ScheduleNotFoundException.class)
+    public ResponseEntity<ApiResponse> handleScheduleNotFoundException(ScheduleNotFoundException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse(e.getMessage(), false));
+    }
+
+    // 날짜 형식 오류 처리
+    @ExceptionHandler(DateTimeParseException.class)
+    public ResponseEntity<ApiResponse> handleDateTimeParseException(DateTimeParseException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse("올바른 날짜 형식이 아닙니다.", false));
+    }
+
 }
