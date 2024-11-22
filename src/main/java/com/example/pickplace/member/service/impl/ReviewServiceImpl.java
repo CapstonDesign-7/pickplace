@@ -164,10 +164,19 @@ public class ReviewServiceImpl implements ReviewService {
                 .collect(Collectors.toList());
     }
 
-    // 전체 리뷰 가져오기
+    // 전체 리뷰 가져오기(최신순)
     @Override
     public List<ReviewResponse> getAllReviews(String currentUserId) {
-        List<Review> reviews = reviewRepository.findAllOrderByLikesCountAndCreatedAtDesc();
+        List<Review> reviews = reviewRepository.findAllOrderByCreatedAtDesc();
+        return reviews.stream()
+                .map(review -> ReviewResponse.from(review, currentUserId))
+                .collect(Collectors.toList());
+    }
+
+    // 추천순 정렬
+    @Override
+    public List<ReviewResponse> getReviewsSortedByLikes(String currentUserId) {
+        List<Review> reviews = reviewRepository.findAllOrderByLikesCountDesc();
         return reviews.stream()
                 .map(review -> ReviewResponse.from(review, currentUserId))
                 .collect(Collectors.toList());

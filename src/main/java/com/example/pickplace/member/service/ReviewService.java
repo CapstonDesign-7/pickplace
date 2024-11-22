@@ -18,6 +18,7 @@ public interface ReviewService {
     ReviewResponse getReview(Long reviewId, String currentUserId);
     List<ReviewResponse> getMyReviews(String memberId);
     List<ReviewResponse> getAllReviews(String currentUserId);
+    List<ReviewResponse> getReviewsSortedByLikes(String currentUserId); // 정렬(추천순)
 
     // 좋아요 기능
     void toggleLike(String memberId, Long reviewId);

@@ -65,11 +65,18 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getReviewForEdit(memberId, reviewId));
     }
 
-    // 전체 리뷰 가져오기
+    // 전체 리뷰 가져오기 (최신순)
     @GetMapping
     public ResponseEntity<List<ReviewResponse>> getAllReviews(Authentication authentication) {
         String currentUserId = authentication != null ? authentication.getName() : null;
         return ResponseEntity.ok(reviewService.getAllReviews(currentUserId));
+    }
+
+    // 추천순으로 정렬된 리뷰 목록
+    @GetMapping("/sort/likes")
+    public ResponseEntity<List<ReviewResponse>> getReviewsSortedByLikes(Authentication authentication) {
+        String currentUserId = authentication != null ? authentication.getName() : null;
+        return ResponseEntity.ok(reviewService.getReviewsSortedByLikes(currentUserId));
     }
 
     // 특정 리뷰 가져오기(리뷰 수정 페이지에서 기존 정보 로딩, 상세 페이지 조회)

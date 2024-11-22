@@ -13,9 +13,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("SELECT r FROM Review r LEFT JOIN r.likes l GROUP BY r ORDER BY COUNT(l) DESC")
     List<Review> findAllOrderByLikesCountDesc();
 
-    // 좋아요 수와 생성일자로 정렬하여 모든 리뷰 조회
-    @Query("SELECT r FROM Review r LEFT JOIN r.likes l " +
-            "GROUP BY r " +
-            "ORDER BY COUNT(l) DESC, r.createdAt DESC")
-    List<Review> findAllOrderByLikesCountAndCreatedAtDesc();
+    // 생성일자로 정렬하여 모든 리뷰 조회
+    @Query("SELECT r FROM Review r ORDER BY r.createdAt DESC")
+    List<Review> findAllOrderByCreatedAtDesc();
 }
