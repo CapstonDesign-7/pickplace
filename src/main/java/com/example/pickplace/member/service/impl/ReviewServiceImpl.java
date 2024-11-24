@@ -51,10 +51,6 @@ public class ReviewServiceImpl implements ReviewService {
             throw new UnauthorizedException("본인의 일정에 대해서만 리뷰를 작성할 수 있습니다.");
         }
 
-
-        // region이 제대로 설정되는지 확인하기 위한 로그
-        log.debug("Schedule region: {}", schedule.getRegion());
-
         Review review = Review.builder()
                 .title(request.getTitle().trim())
                 .content(request.getContent().trim())
@@ -193,6 +189,15 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public List<ReviewResponse> getReviewsSortedByLikes(String currentUserId) {
         List<Review> reviews = reviewRepository.findAllOrderByLikesCountDesc();
+        return reviews.stream()
+                .map(review -> ReviewResponse.from(review, currentUserId))
+                .collect(Collectors.toList());
+    }
+
+    // 리뷰 검색 기능
+    @Override
+    public List<ReviewResponse> searchReviewsByRegion(String region, String currentUserId) {
+        List<Review> reviews = reviewRepository.findByRegionContaining(region);
         return reviews.stream()
                 .map(review -> ReviewResponse.from(review, currentUserId))
                 .collect(Collectors.toList());

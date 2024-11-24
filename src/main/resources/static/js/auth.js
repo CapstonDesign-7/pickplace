@@ -1,53 +1,100 @@
-// auth.js - 공통으로 사용할 인증 관련 함수
-const auth = {
-    // 토큰 체크 및 API 요청 함수
-    async fetchWithAuth(url, options = {}) {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            auth.handleLogout('로그인이 필요합니다.');
-            return null;
-        }
-
-        try {
-            const headers = {
-                ...options.headers,
-                'Authorization': `Bearer ${token}`
-            };
-
-            const response = await fetch(url, { ...options, headers });
-
-            if (response.status === 401) {
-                // 토큰이 만료되었거나 유효하지 않은 경우
-                auth.handleLogout('로그인 시간이 만료되었습니다. 다시 로그인해 주세요.');
-                return null;
-            }
-
-            return response;
-        } catch (error) {
-            console.error('API 요청 실패:', error);
-            throw error;
-        }
-    },
-
-    // 로그아웃 처리 함수
-    handleLogout(message) {
-        localStorage.removeItem('token');
-        alert(message);
-        window.location.href = '/login.html';
-    },
-
-    // 토큰 유효성 주기적 체크
-    startTokenCheck() {
-        // 5분마다 토큰 유효성 체크
-        setInterval(async () => {
-            try {
-                const response = await this.fetchWithAuth('/api/members/validate-token');
-                if (!response || !response.ok) {
-                    this.handleLogout('로그인 시간이 만료되었습니다. 다시 로그인해 주세요.');
-                }
-            } catch (error) {
-                console.error('토큰 검증 실패:', error);
-            }
-        }, 5 * 60 * 1000); // 5분
+async function checkLoginStatus() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        handleLoggedOut();
+        return false;
     }
+
+    try {
+        const response = await fetch('/api/members/me', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            // 토큰이 만료되었거나 유효하지 않은 경우
+            localStorage.removeItem('token');
+            handleLoggedOut();
+            return false;
+        }
+
+        handleLoggedIn();
+        return true;
+    } catch (error) {
+        console.error('Auth check failed:', error);
+        localStorage.removeItem('token');
+        handleLoggedOut();
+        return false;
+    }
+}
+
+// fetchWithAuth 함수 추가
+async function fetchWithAuth(url, options = {}) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        throw new Error('No token found');
+    }
+
+    const headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`
+    };
+
+    if (options.method === 'POST' || options.method === 'PUT') {
+        if (!(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
+    }
+
+    const response = await fetch(url, { ...options, headers });
+
+    if (response.status === 401) {
+        localStorage.removeItem('token');
+        handleLoggedOut();
+        window.location.href = '/login.html';
+        throw new Error('Authentication failed');
+    }
+
+    return response;
+}
+
+function handleLoggedIn() {
+    // 로그인 상태 UI 업데이트
+    const loginBtn = document.getElementById('login-btn');
+    const signupBtn = document.getElementById('signup-btn');
+    const profileIcon = document.getElementById('profile-icon');
+
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (signupBtn) signupBtn.style.display = 'none';
+    if (profileIcon) profileIcon.classList.remove('hidden');
+}
+
+function handleLoggedOut() {
+    // 로그아웃 상태 UI 업데이트
+    const loginBtn = document.getElementById('login-btn');
+    const signupBtn = document.getElementById('signup-btn');
+    const profileIcon = document.getElementById('profile-icon');
+
+    if (loginBtn) loginBtn.style.display = 'inline-block';
+    if (signupBtn) signupBtn.style.display = 'inline-block';
+    if (profileIcon) profileIcon.classList.add('hidden');
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    handleLoggedOut();
+    window.location.href = '/login.html';
+}
+
+// 모든 함수를 export
+const auth = {
+    checkLoginStatus,
+    fetchWithAuth,
+    handleLoggedIn,
+    handleLoggedOut,
+    logout
 };
+
+// auth 객체를 전역으로 사용할 수 있도록 설정
+window.auth = auth;

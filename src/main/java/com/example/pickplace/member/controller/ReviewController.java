@@ -48,7 +48,7 @@ public class ReviewController {
     @PutMapping("/{reviewId}")
     public ResponseEntity<ReviewResponse> updateReview(
             Authentication authentication,
-            @PathVariable("reviewId") Long reviewId,  // name 속성 추가
+            @PathVariable(name = "reviewId") Long reviewId,
             @ModelAttribute ReviewRequest request,
             @RequestParam(value = "images", required = false) List<MultipartFile> images) {
         String memberId = authentication.getName();
@@ -69,7 +69,7 @@ public class ReviewController {
     @GetMapping("/{reviewId}/edit")
     public ResponseEntity<ReviewResponse> getReviewForEdit(
             Authentication authentication,
-            @PathVariable("reviewId") Long reviewId) {
+            @PathVariable(name = "reviewId") Long reviewId) {
         String memberId = authentication.getName();
         return ResponseEntity.ok(reviewService.getReviewForEdit(memberId, reviewId));
     }
@@ -91,7 +91,7 @@ public class ReviewController {
     // 특정 리뷰 가져오기(리뷰 수정 페이지에서 기존 정보 로딩, 상세 페이지 조회)
     @GetMapping("/{reviewId}")
     public ResponseEntity<ReviewResponse> getReview(
-            @PathVariable Long reviewId,
+            @PathVariable(name = "reviewId") Long reviewId,
             Authentication authentication) {
         String currentUserId = authentication != null ? authentication.getName() : null;
         return ResponseEntity.ok(reviewService.getReview(reviewId, currentUserId));
@@ -123,5 +123,15 @@ public class ReviewController {
         response.put("likeCount", reviewService.getLikeCount(reviewId));
 
         return ResponseEntity.ok(response);
+    }
+
+    // 리뷰 검색
+    @GetMapping("/search")
+    public ResponseEntity<List<ReviewResponse>> searchReviews(
+            @RequestParam(name = "region") String region,  // name 속성 명시
+            Authentication authentication) {
+        String currentUserId = authentication != null ? authentication.getName() : null;
+        List<ReviewResponse> reviews = reviewService.searchReviewsByRegion(region, currentUserId);
+        return ResponseEntity.ok(reviews);
     }
 }

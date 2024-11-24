@@ -17,6 +17,7 @@ public class ReviewResponse {
     private String region;
     private String content;
     private String writerName;
+    private String purpose;
     private List<String> imageUrls;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -37,6 +38,7 @@ public class ReviewResponse {
                 .updatedAt(review.getUpdatedAt())
                 .likeCount(review.getLikeCount())
                 .isLiked(currentUserId != null && review.isLikedBy(currentUserId))
+                .purpose(review.getSchedule().getPurpose())
                 .build();
     }
 }
