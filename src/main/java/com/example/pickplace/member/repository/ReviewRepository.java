@@ -21,4 +21,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     // 지역으로 리뷰 검색
     @Query("SELECT r FROM Review r WHERE r.region LIKE %:region%")
     List<Review> findByRegionContaining(@Param("region") String region);
+
+    // 제목으로 리뷰 검색
+    @Query("SELECT r FROM Review r WHERE r.title LIKE %:title%")
+    List<Review> findByTitleContaining(@Param("title") String title);
 }

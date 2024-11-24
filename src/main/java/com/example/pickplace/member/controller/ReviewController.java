@@ -128,10 +128,21 @@ public class ReviewController {
     // 리뷰 검색
     @GetMapping("/search")
     public ResponseEntity<List<ReviewResponse>> searchReviews(
-            @RequestParam(name = "region") String region,  // name 속성 명시
+            @RequestParam(name = "query") String query,
+            @RequestParam(name = "type") String type,
+            @RequestParam(name = "sortType", defaultValue = "latest") String sortType,
             Authentication authentication) {
         String currentUserId = authentication != null ? authentication.getName() : null;
-        List<ReviewResponse> reviews = reviewService.searchReviewsByRegion(region, currentUserId);
+
+        List<ReviewResponse> reviews;
+        if ("region".equals(type)) {
+            reviews = reviewService.searchReviewsByRegion(query, currentUserId, sortType);
+        } else if ("title".equals(type)) {
+            reviews = reviewService.searchReviewsByTitle(query, currentUserId, sortType);
+        } else {
+            throw new IllegalArgumentException("Invalid search type");
+        }
+
         return ResponseEntity.ok(reviews);
     }
 }

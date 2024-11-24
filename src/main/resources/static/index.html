@@ -52,17 +52,25 @@
     <!-- 검색 및 리뷰 작성 버튼 -->
     <div class="flex justify-center items-center mb-8">
       <form id="search-form" class="relative w-1/2 flex">
+        <div class="flex-none">
+          <select id="search-type"
+                  class="rounded-l border-r-0 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <option value="region">지역</option>
+            <option value="title">제목</option>
+          </select>
+        </div>
         <input type="text"
-              id="search-input"
-              name="region"
-              placeholder="지역을 입력하세요..."
-              class="shadow appearance-none border rounded-l w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+               id="search-input"
+               name="query"
+               placeholder="검색어를 입력하세요..."
+               class="flex-grow border-l-0 shadow appearance-none border rounded-r-none w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         <button type="submit"
                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r focus:outline-none focus:shadow-outline">
           검색
         </button>
         <button id="clear-search"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden">
+                type="button"
+                class="absolute right-20 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden">
           ✕
         </button>
         <button onclick="goToWriteReview()"
@@ -158,35 +166,43 @@
     itemsPerPage: 6,
     totalReviews: [],
     searchTimeout: null,
+    lastSearchParams: null,
 
     // 리뷰 검색
-    async searchReviews(region) {
+    async searchReviews(query, type) {
       try {
-        const searchInput = document.getElementById('search-input');
-        const container = document.getElementById('reviews-container');
-        const paginationContainer = document.getElementById('pagination-container');
-
-        // 검색어가 비어있는 경우 전체 목록 로드
-        if (!region || region.trim() === '') {
+        if (!query || query.trim() === '') {
+          this.lastSearchParams = null;  // 검색 파라미터 초기화
           await this.loadReviews();
           return;
         }
 
+        // 검색 파라미터 저장 (정렬 상태 포함)
+        this.lastSearchParams = {
+          query: query.trim(),
+          type,
+          sortType: this.currentSortType
+        };
+
+        const searchInput = document.getElementById('search-input');
+        const container = document.getElementById('reviews-container');
+        const paginationContainer = document.getElementById('pagination-container');
+
         // 로딩 표시
         container.innerHTML = `
-            <div class="flex justify-center items-center w-full py-8 col-span-3">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            </div>
-        `;
+                <div class="flex justify-center items-center w-full py-8 col-span-3">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+            `;
         paginationContainer.innerHTML = '';
 
         const token = localStorage.getItem('token');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
-        const response = await fetch(`/api/reviews/search?region=${encodeURIComponent(region.trim())}`, {
-          method: 'GET',
-          headers
-        });
+        const response = await fetch(
+                `/api/reviews/search?query=${encodeURIComponent(query.trim())}&type=${type}`,
+                { headers }
+        );
 
         if (!response.ok) {
           throw new Error('검색에 실패했습니다.');
@@ -196,10 +212,10 @@
 
         if (reviews.length === 0) {
           container.innerHTML = `
-                <div class="text-center py-8 text-gray-500 col-span-3">
-                    "${searchInput.value}" 에 대한 검색 결과가 없습니다.
-                </div>
-            `;
+                    <div class="text-center py-8 text-gray-500 col-span-3">
+                        "${searchInput.value}" 에 대한 검색 결과가 없습니다.
+                    </div>
+                `;
           paginationContainer.innerHTML = '';
           return;
         }
@@ -211,10 +227,10 @@
         const paginationContainer = document.getElementById('pagination-container');
 
         container.innerHTML = `
-            <div class="text-center py-8 text-red-500 col-span-3">
-                검색 중 오류가 발생했습니다. 다시 시도해 주세요.
-            </div>
-        `;
+                <div class="text-center py-8 text-red-500 col-span-3">
+                    검색 중 오류가 발생했습니다. 다시 시도해 주세요.
+                </div>
+            `;
         paginationContainer.innerHTML = '';
       }
     },
@@ -248,6 +264,14 @@
       }
     },
 
+    async reloadCurrentView() {
+      if (this.lastSearchParams) {
+        await this.searchReviews(this.lastSearchParams.query, this.lastSearchParams.type);
+      } else {
+        await this.loadReviews();
+      }
+    },
+
     // 좋아요 버튼 처리
     async handleLikeClick(event, reviewId) {
       event.preventDefault();
@@ -256,7 +280,7 @@
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          alert('로그인이 필요한 기능입니다.');
+          alert('로그인이 필요한 서비스입니다.');
           window.location.href = '/login.html';
           return;
         }
@@ -269,12 +293,29 @@
         });
 
         if (response.ok) {
-          await this.loadReviews();  // await 추가
-        } else {
-          console.error('좋아요 처리 실패');
+          const data = await response.json();
+          await this.reloadCurrentView();  // 현재 상태 (검색/정렬)를 유지하며 새로고침
+
+          // 상세 보기 모달이 열려있는 경우 업데이트
+          const modal = document.getElementById('review-detail-modal');
+          if (!modal.classList.contains('hidden')) {
+            const likeButton = modal.querySelector('.like-button');
+            const likeSvg = likeButton.querySelector('svg');
+            const likeCount = likeButton.querySelector('.like-count');
+
+            if (data.isLiked) {
+              likeSvg.classList.add('text-red-500');
+              likeSvg.setAttribute('fill', 'currentColor');
+            } else {
+              likeSvg.classList.remove('text-red-500');
+              likeSvg.setAttribute('fill', 'none');
+            }
+            likeCount.textContent = data.likeCount;
+          }
         }
       } catch (error) {
-        console.error('좋아요 처리 중 오류 발생:', error);
+        console.error('좋아요 처리 실패:', error);
+        alert('좋아요 처리 중 오류가 발생했습니다.');
       }
     },
 
@@ -284,6 +325,14 @@
       this.updateSortButtonStyles();
 
       try {
+        // 검색 상태일 경우
+        if (this.lastSearchParams) {
+          this.lastSearchParams.sortType = sortType;  // 정렬 타입 업데이트
+          await this.searchReviews(this.lastSearchParams.query, this.lastSearchParams.type);
+          return;
+        }
+
+        // 일반 정렬
         const endpoint = sortType === 'latest' ? '/api/reviews' : '/api/reviews/sort/likes';
         const response = await auth.fetchWithAuth(endpoint);
 
@@ -429,7 +478,7 @@
     // 리뷰 목록 생성
     createReviewTemplate(review) {
       const imageHtml = review.imageUrls?.length > 0
-              ? `<div class="relative" style="padding-bottom: 60%;">
+              ? `<div class="relative" style="padding-bottom: 56.25%;">
                  <img src="${review.imageUrls[0]}"
                       alt="리뷰 이미지"
                       class="absolute h-full w-full object-cover">
@@ -437,7 +486,7 @@
               : '';
 
       return `
-            <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer"
+            <div class="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
                  onclick="reviews.showReviewDetail(${review.id})">
                 ${imageHtml}
                 <div class="p-3">
@@ -445,6 +494,7 @@
                         <span class="text-sm text-gray-500">${review.region}</span>
                         <h3 class="text-base font-semibold truncate">${review.title}</h3>
                     </div>
+                    <p class="text-sm text-gray-600 mb-2 line-clamp-2">${review.content}</p>
                     <div class="flex justify-between items-center text-xs text-gray-500">
                         <span>${review.writerName}</span>
                         <div class="flex items-center space-x-2">
@@ -462,7 +512,6 @@
                                 </svg>
                                 <span class="like-count">${review.likeCount || 0}</span>
                             </button>
-                            <span>${new Date(review.createdAt).toLocaleDateString()}</span>
                         </div>
                     </div>
                 </div>
@@ -545,19 +594,29 @@
     initializeSearch() {
       const searchForm = document.getElementById('search-form');
       const searchInput = document.getElementById('search-input');
+      const searchType = document.getElementById('search-type');
       const clearButton = document.getElementById('clear-search');
 
-      if (searchForm && searchInput && clearButton) {
+
+      if (searchForm && searchInput && searchType && clearButton) {
         // 검색어 입력 시 X 버튼 표시/숨김
         searchInput.addEventListener('input', (e) => {
           clearButton.style.display = e.target.value ? 'block' : 'none';
+        });
+
+        // 검색 유형 변경 시 placeholder 업데이트
+        searchType.addEventListener('change', (e) => {
+          searchInput.placeholder = e.target.value === 'region'
+                  ? '지역을 입력하세요...'
+                  : '제목을 입력하세요...';
         });
 
         // 검색 폼 제출
         searchForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           const searchTerm = searchInput.value.trim();
-          await this.searchReviews(searchTerm);
+          const type = searchType.value;
+          await this.searchReviews(searchTerm, type);
         });
 
         // 검색 초기화 버튼

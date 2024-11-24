@@ -194,10 +194,19 @@ public class ReviewServiceImpl implements ReviewService {
                 .collect(Collectors.toList());
     }
 
-    // 리뷰 검색 기능
+    // 리뷰 검색 기능(장소)
     @Override
-    public List<ReviewResponse> searchReviewsByRegion(String region, String currentUserId) {
+    public List<ReviewResponse> searchReviewsByRegion(String region, String currentUserId, String sortType) {
         List<Review> reviews = reviewRepository.findByRegionContaining(region);
+        return reviews.stream()
+                .map(review -> ReviewResponse.from(review, currentUserId))
+                .collect(Collectors.toList());
+    }
+
+    // 리뷰 검색 기능(제목)
+    @Override
+    public List<ReviewResponse> searchReviewsByTitle(String title, String currentUserId, String sortType) {
+        List<Review> reviews = reviewRepository.findByTitleContaining(title);
         return reviews.stream()
                 .map(review -> ReviewResponse.from(review, currentUserId))
                 .collect(Collectors.toList());

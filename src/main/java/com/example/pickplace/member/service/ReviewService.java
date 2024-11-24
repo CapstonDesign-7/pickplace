@@ -21,7 +21,8 @@ public interface ReviewService {
     List<ReviewResponse> getReviewsSortedByLikes(String currentUserId); // 정렬(추천순)
 
     // 검색 기능
-    List<ReviewResponse> searchReviewsByRegion(String region, String currentUserId);
+    List<ReviewResponse> searchReviewsByRegion(String region, String currentUserId, String sortType);
+    List<ReviewResponse> searchReviewsByTitle(String title, String currentUserId, String sortType);
 
     // 좋아요 기능
     void toggleLike(String memberId, Long reviewId);
