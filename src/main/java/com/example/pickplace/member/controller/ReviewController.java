@@ -29,9 +29,18 @@ public class ReviewController {
     @PostMapping
     public ResponseEntity<ReviewResponse> createReview(
             Authentication authentication,
-            @ModelAttribute ReviewRequest request,
+            @RequestParam("scheduleId") Long scheduleNo,  // @RequestParam으로 변경
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
             @RequestParam(value = "images", required = false) List<MultipartFile> images) {
+
         String memberId = authentication.getName();
+
+        ReviewRequest request = new ReviewRequest();
+        request.setScheduleNo(scheduleNo);
+        request.setTitle(title);
+        request.setContent(content);
+
         return ResponseEntity.ok(reviewService.createReview(memberId, request, images));
     }
 

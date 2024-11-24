@@ -4,17 +4,17 @@ import com.example.pickplace.member.controller.dto.ReviewRequest;
 import com.example.pickplace.member.repository.LikeRepository;
 import com.example.pickplace.member.repository.MemberRepository;
 import com.example.pickplace.member.repository.ReviewRepository;
-import com.example.pickplace.member.repository.entity.Like;
-import com.example.pickplace.member.repository.entity.Member;
-import com.example.pickplace.member.repository.entity.Review;
-import com.example.pickplace.member.repository.entity.ReviewImage;
+import com.example.pickplace.member.repository.ScheduleRepository;
+import com.example.pickplace.member.repository.entity.*;
 import com.example.pickplace.member.response.ReviewResponse;
 import com.example.pickplace.member.service.ImageUploadService;
 import com.example.pickplace.member.service.ReviewService;
 import com.example.pickplace.member.service.exception.MemberNotFoundException;
 import com.example.pickplace.member.service.exception.ReviewNotFoundException;
+import com.example.pickplace.member.service.exception.ScheduleNotFoundException;
 import com.example.pickplace.member.service.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,10 +27,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final MemberRepository memberRepository;
+    private final ScheduleRepository scheduleRepository;
     private final ImageUploadService imageUploadService;
     private final LikeRepository likeRepository;
 
@@ -41,10 +43,24 @@ public class ReviewServiceImpl implements ReviewService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("회원을 찾을 수 없습니다."));
 
+        Schedule schedule = scheduleRepository.findById(request.getScheduleNo())
+                .orElseThrow(() -> new ScheduleNotFoundException("일정을 찾을 수 없습니다."));
+
+        // 해당 일정의 작성자인지 확인
+        if (!schedule.isWriter(memberId)) {
+            throw new UnauthorizedException("본인의 일정에 대해서만 리뷰를 작성할 수 있습니다.");
+        }
+
+
+        // region이 제대로 설정되는지 확인하기 위한 로그
+        log.debug("Schedule region: {}", schedule.getRegion());
+
         Review review = Review.builder()
                 .title(request.getTitle().trim())
                 .content(request.getContent().trim())
                 .member(member)
+                .schedule(schedule)
+                .region(schedule.getRegion()) // region 명시적 설정
                 .images(new ArrayList<>())
                 .build();
 

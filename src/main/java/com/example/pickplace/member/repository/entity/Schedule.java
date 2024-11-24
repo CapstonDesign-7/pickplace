@@ -53,6 +53,14 @@ public class Schedule {
         return this.member.getId().equals(memberId);
     }
 
+    // region 값 확인을 위한 메서드 추가
+    public String getRegion() {
+        if (region == null || region.trim().isEmpty()) {
+            throw new IllegalStateException("Schedule region must not be null or empty");
+        }
+        return region;
+    }
+
     public void update(String title, String purpose, Integer numberOfPeople, String region,
                        LocalDate startDate, LocalDate endDate) {
         this.title = title;

@@ -73,6 +73,25 @@
     <div id="reviews-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <!-- 리뷰들이 여기에 동적으로 추가됨 -->
     </div>
+
+    <!-- 리뷰 상세 모달 -->
+    <div id="review-detail-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg w-11/12 max-w-2xl max-h-[90vh] overflow-y-auto relative">
+        <!-- 닫기 버튼 -->
+        <button onclick="closeReviewDetail()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+
+        <!-- 리뷰 상세 내용 -->
+        <div class="p-6">
+          <div id="review-detail-content">
+            <!-- 동적으로 채워질 내용 -->
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 </div>
 
@@ -243,6 +262,110 @@
       } catch (error) {
         console.error('Error:', error);
       }
+    },
+
+    async showReviewDetail(reviewId) {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+        const response = await fetch(`/api/reviews/${reviewId}`, { headers });
+        if (!response.ok) throw new Error('리뷰를 불러올 수 없습니다.');
+
+        const review = await response.json();
+
+        const modal = document.getElementById('review-detail-modal');
+        const content = document.getElementById('review-detail-content');
+
+        let imagesHtml = '';
+        if (review.imageUrls && review.imageUrls.length > 0) {
+          imagesHtml = `
+          <div class="mb-6">
+            <div class="flex gap-2 overflow-x-auto">
+              ${review.imageUrls.map(url => `
+                <img src="${url}" alt="리뷰 이미지" class="w-64 h-64 object-cover rounded-lg">
+              `).join('')}
+            </div>
+          </div>
+        `;
+        }
+
+        content.innerHTML = `
+        <div class="mb-4">
+          <h2 class="text-2xl font-bold mb-2">${review.title}</h2>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-gray-600">
+              <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">${review.region}</span>
+            </span>
+            <div class="flex items-center space-x-2">
+              <button onclick="reviews.handleLikeClick(event, ${review.id})" class="like-button flex items-center space-x-1">
+                <svg class="w-6 h-6 ${review.isLiked ? 'text-red-500' : 'text-gray-400'}"
+                     fill="${review.isLiked ? 'currentColor' : 'none'}"
+                     stroke="currentColor"
+                     viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                  </path>
+                </svg>
+                <span class="like-count">${review.likeCount || 0}</span>
+              </button>
+            </div>
+          </div>
+          <div class="text-sm text-gray-500 mb-2">
+            작성자: ${review.writerName}<br>
+            작성일: ${new Date(review.createdAt).toLocaleDateString()}
+          </div>
+        </div>
+        ${imagesHtml}
+        <div class="prose max-w-none">
+          <p class="whitespace-pre-wrap">${review.content}</p>
+        </div>
+      `;
+
+        modal.classList.remove('hidden');
+      } catch (error) {
+        console.error('리뷰 상세 정보 로드 실패:', error);
+        alert('리뷰를 불러오는데 실패했습니다.');
+      }
+    },
+
+    createReviewTemplate(review) {
+      const imageHtml = review.imageUrls?.length > 0
+              ? `<div class="relative" style="padding-bottom: 66.67%;">
+           <img src="${review.imageUrls[0]}" alt="리뷰 이미지" class="absolute h-full w-full object-cover">
+         </div>`
+              : '';
+
+      return `
+      <div class="cursor-pointer" onclick="reviews.showReviewDetail(${review.id})">
+        ${imageHtml}
+        <div class="p-4">
+          <h3 class="text-lg font-semibold mb-2">${review.title}</h3>
+          <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm mb-2">${review.region}</span>
+          <p class="text-gray-600 mb-2 line-clamp-2">${review.content}</p>
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-sm text-gray-500">
+              <span>작성자: ${review.writerName}</span>
+              <br>
+              <span>작성일: ${new Date(review.createdAt).toLocaleDateString()}</span>
+            </div>
+            <div class="flex items-center">
+              <button onclick="reviews.handleLikeClick(event, ${review.id})" class="like-button flex items-center space-x-1">
+                <svg class="w-6 h-6 ${review.isLiked ? 'text-red-500' : 'text-gray-400'}"
+                     fill="${review.isLiked ? 'currentColor' : 'none'}"
+                     stroke="currentColor"
+                     viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                  </path>
+                </svg>
+                <span class="like-count">${review.likeCount || 0}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
     }
   };
 
@@ -296,6 +419,25 @@
     const photoReviewSection = document.getElementById('photo-review');
     if (photoReviewSection) {
       reviews.loadReviews();
+    }
+  });
+
+  // 모달 닫기 함수
+  function closeReviewDetail() {
+    document.getElementById('review-detail-modal').classList.add('hidden');
+  }
+
+  // ESC 키로 모달 닫기
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeReviewDetail();
+    }
+  });
+
+  // 모달 외부 클릭 시 닫기
+  document.getElementById('review-detail-modal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+      closeReviewDetail();
     }
   });
 </script>

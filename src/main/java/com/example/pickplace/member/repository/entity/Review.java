@@ -26,12 +26,14 @@ public class Review {
     @Column(nullable = false)
     private String title;
 
-    // 지역 추가(일정에 맞게)
-//    @Column(nullable = false)
-//    @JoinColumn(name = "region_title")
-//    private String region;
-
     @Column(nullable = false)
+    private String region;  // region 필드 추가
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "schedule_no", nullable = false)
+    private Schedule schedule;
+
+    @Column(nullable = false, length = 2000)
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -50,6 +52,22 @@ public class Review {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    // 리뷰 상세보기
+    @Builder
+    public Review(String title, String content, String region, Member member, Schedule schedule, List<ReviewImage> images) {
+        this.title = title;
+        this.content = content;
+        this.member = member;
+        this.schedule = schedule;
+        this.region = region;  // Schedule의 region을 복사
+        this.images = images != null ? images : new ArrayList<>();
+    }
+
+    // 일정에서 장소 가져옴
+    public String getRegion() {
+        return this.schedule.getRegion();
+    }
 
     // 이미지 추가를 위한 편의 메서드
     public void addImage(ReviewImage image) {

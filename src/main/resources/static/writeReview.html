@@ -9,10 +9,28 @@
 </head>
 <body class="bg-gray-100">
 <div class="container mx-auto px-4 py-8 max-w-2xl">
-  <div class="bg-white rounded-lg shadow-md p-6">
+  <!-- 일정 선택 모달 -->
+  <div id="schedule-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+      <h2 class="text-xl font-bold mb-4">리뷰를 작성할 일정 선택</h2>
+      <div id="schedules-container" class="space-y-4">
+        <!-- 일정 목록이 여기에 동적으로 추가됨 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 리뷰 작성 폼 -->
+  <div id="review-form-container" class="bg-white rounded-lg shadow-md p-6 hidden">
     <h1 class="text-2xl font-bold mb-6">리뷰 작성</h1>
 
+    <!-- 선택된 일정 정보 표시 -->
+    <div id="selected-schedule-info" class="mb-6 p-4 bg-gray-50 rounded-lg">
+      <!-- 일정 정보가 여기에 표시됨 -->
+    </div>
+
     <form id="review-form" class="space-y-6">
+      <input type="hidden" id="scheduleId" name="scheduleId">
+
       <div>
         <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
           제목
@@ -62,6 +80,8 @@
 </div>
 
 <script>
+  let selectedSchedule = null;
+
   // 로그인 체크
   function checkAuth() {
     const token = localStorage.getItem('token');
@@ -69,12 +89,84 @@
       alert('리뷰 작성 권한이 없습니다. 로그인이 필요합니다.');
       window.location.href = '/login.html';
     }
+    loadMySchedules();
+  }
+
+  // 내 일정 목록 불러오기
+  async function loadMySchedules() {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/schedules/my', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const schedules = await response.json();
+        if (schedules.length === 0) {
+          alert('작성된 일정이 없습니다. 일정을 먼저 작성해주세요.');
+          window.location.href = '/schedule.html';
+          return;
+        }
+        displaySchedules(schedules);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('일정을 불러오는데 실패했습니다.');
+    }
+  }
+
+  // 일정 목록 표시
+  function displaySchedules(schedules) {
+    const container = document.getElementById('schedules-container');
+    container.innerHTML = schedules.map(schedule => `
+      <div class="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer schedule-item"
+           data-schedule='${JSON.stringify(schedule)}'>
+        <h3 class="font-bold">${schedule.title}</h3>
+        <p class="text-sm text-gray-600">
+          지역: ${schedule.region}<br>
+          기간: ${schedule.startDate} ~ ${schedule.endDate}<br>
+          인원: ${schedule.numberOfPeople}명
+        </p>
+      </div>
+    `).join('');
+
+    // 이벤트 리스너 추가
+    document.querySelectorAll('.schedule-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const schedule = JSON.parse(this.dataset.schedule);
+        selectSchedule(schedule);
+      });
+    });
+  }
+
+  // 일정 선택
+  // scheduleId가 제대로 설정되는지 확인하기 위한 디버그 로그 추가
+  function selectSchedule(schedule) {
+    selectedSchedule = schedule;
+    document.getElementById('schedule-modal').style.display = 'none';
+    document.getElementById('review-form-container').classList.remove('hidden');
+
+    const scheduleIdInput = document.getElementById('scheduleId');
+    scheduleIdInput.value = schedule.id;
+    console.log('Selected Schedule ID:', schedule.id); // 디버그 로그
+
+    // 선택된 일정 정보 표시
+    document.getElementById('selected-schedule-info').innerHTML = `
+        <h3 class="font-bold mb-2">선택된 일정</h3>
+        <p>제목: ${schedule.title}</p>
+        <p>지역: ${schedule.region}</p>
+        <p>기간: ${schedule.startDate} ~ ${schedule.endDate}</p>
+        <p>인원: ${schedule.numberOfPeople}명</p>
+    `;
   }
 
   // 이미지 미리보기 처리
   function handleImageUpload(event) {
     const files = event.target.files;
     const previewContainer = document.getElementById('preview-container');
+    previewContainer.innerHTML = ''; // 기존 미리보기 초기화
 
     for (const file of files) {
       const reader = new FileReader();
@@ -100,11 +192,12 @@
     }
   }
 
-  // 리뷰 제출 처리
+  // 리뷰 제출 처리 함수 수정
   document.getElementById('review-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const formData = new FormData();
+    formData.append('scheduleId', document.getElementById('scheduleId').value);
     formData.append('title', document.getElementById('title').value);
     formData.append('content', document.getElementById('content').value);
 
@@ -119,6 +212,7 @@
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
+          // Content-Type은 설정하지 않음 (multipart/form-data를 위해)
         },
         body: formData
       });

@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public class ReviewResponse {
     private Long id;
     private String title;
+    private String region;
     private String content;
     private String writerName;
     private List<String> imageUrls;
@@ -26,6 +27,7 @@ public class ReviewResponse {
         return ReviewResponse.builder()
                 .id(review.getId())
                 .title(review.getTitle())
+                .region(review.getRegion())
                 .content(review.getContent())
                 .writerName(review.getMember().getId())
                 .imageUrls(review.getImages().stream()
